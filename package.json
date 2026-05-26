@@ -1,0 +1,28 @@
+{
+  "name": "food-safety-lab",
+  "version": "1.0.0",
+  "description": "Научно-образовательный комплекс: Лаборатория продовольственной безопасности",
+  "main": "main.js",
+  "scripts": {
+    "start": "node server.js",
+    "electron": "electron .",
+    "dev": "node server.js & electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.5.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.2.0",
+    "morgan": "^1.10.1",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "electron": "^42.2.0"
+  }
+}

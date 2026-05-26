@@ -1,0 +1,715 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-01-01",
+  "description": "Локальная база знаний: эталонные физико-химические показатели продовольственных товаров",
+  "products": {
+
+    "meat": {
+      "groupName": "Мясные и мясосодержащие продукты",
+      "description": "Мясо, птица, колбасные изделия, мясные полуфабрикаты, консервы",
+      "items": {
+        "beef_chilled": {
+          "name": "Говядина охлаждённая",
+          "group": "meat",
+          "standards": {
+            "gost": "ГОСТ Р 54315-2011",
+            "gostTitle": "Крупный рогатый скот для убоя. Говядина и телятина в тушах, полутушах и четвертинах",
+            "tr_ts": "ТР ТС 034/2013",
+            "tr_tsTitle": "О безопасности мяса и мясной продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 75.0, "unit": "%" },
+            "fat": { "min": 2.0, "max": 25.0, "unit": "%" },
+            "protein": { "min": 14.0, "max": null, "unit": "%" },
+            "salt": { "min": null, "max": null, "unit": "%" },
+            "acidity": { "min": null, "max": null, "unit": "pH", "note": "pH 5.4–6.2 для свежего мяса" },
+            "ph": { "min": 5.4, "max": 6.2 },
+            "kmafanm": { "min": null, "max": 1000000, "unit": "КОЕ/г" },
+            "hydroxyprolin": { "min": null, "max": null, "note": "Индекс качества белка" }
+          },
+          "storageConditions": {
+            "maxTemp": 4,
+            "minTemp": 0,
+            "maxRH": 85,
+            "shelfLife_days": 5
+          },
+          "microbiologicalModel": {
+            "Tmin": -1.5,
+            "b": 0.0317,
+            "Nmax": 1e8,
+            "h0": 0.5
+          },
+          "moistureModel": {
+            "diffusionCoeff": 8e-11,
+            "thickness": 0.05
+          },
+          "verifiedLinks": [
+            { "source": "РСТ (Росстандарт)", "url": "https://www.rst.gov.ru", "description": "Официальный сайт Росстандарта" },
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200094594", "description": "ГОСТ Р 54315-2011 в системе КОДЕКС/Техэксперт" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/499050648", "description": "ТР ТС 034/2013 в электронном фонде нормативных документов" },
+            { "source": "Техэксперт", "url": "https://www.cntd.ru", "description": "Центр нормативно-технической документации" }
+          ]
+        },
+
+        "pork_sausage_boiled": {
+          "name": "Колбаса варёная первого сорта",
+          "group": "meat",
+          "standards": {
+            "gost": "ГОСТ 23670-2019",
+            "gostTitle": "Колбасы варёные, сосиски, сардельки, хлебы мясные",
+            "tr_ts": "ТР ТС 034/2013",
+            "tr_tsTitle": "О безопасности мяса и мясной продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 70.0, "unit": "%" },
+            "fat": { "min": null, "max": 26.0, "unit": "%" },
+            "protein": { "min": 10.0, "max": null, "unit": "%" },
+            "salt": { "min": 1.5, "max": 2.5, "unit": "%" },
+            "acidity": { "min": null, "max": null, "unit": "%" },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" },
+            "starch": { "min": null, "max": 5.0, "unit": "%" }
+          },
+          "storageConditions": {
+            "maxTemp": 6,
+            "minTemp": 0,
+            "maxRH": 80,
+            "shelfLife_days": 5
+          },
+          "microbiologicalModel": {
+            "Tmin": 0,
+            "b": 0.02,
+            "Nmax": 1e7,
+            "h0": 0.3
+          },
+          "moistureModel": {
+            "diffusionCoeff": 5e-11,
+            "thickness": 0.04
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200166420", "description": "ГОСТ 23670-2019 в системе КОДЕКС" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/499050648", "description": "ТР ТС 034/2013" }
+          ]
+        },
+
+        "meat_semifinished_cutlet": {
+          "name": "Котлеты мясные (полуфабрикат рубленый)",
+          "group": "meat",
+          "standards": {
+            "gost": "ГОСТ 32951-2014",
+            "gostTitle": "Полуфабрикаты мясные и мясосодержащие. Общие технические условия",
+            "tr_ts": "ТР ТС 034/2013",
+            "tr_tsTitle": "О безопасности мяса и мясной продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 68.0, "unit": "%" },
+            "fat": { "min": null, "max": 20.0, "unit": "%" },
+            "protein": { "min": 12.0, "max": null, "unit": "%" },
+            "salt": { "min": 1.0, "max": 2.0, "unit": "%" },
+            "breading": { "min": null, "max": 15.0, "unit": "%" }
+          },
+          "storageConditions": {
+            "maxTemp": -18,
+            "shelfLife_days": 30
+          },
+          "microbiologicalModel": {
+            "Tmin": -5,
+            "b": 0.018,
+            "Nmax": 5e6,
+            "h0": 0.4
+          },
+          "moistureModel": {
+            "diffusionCoeff": 6e-11,
+            "thickness": 0.015
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200112605", "description": "ГОСТ 32951-2014 в системе КОДЕКС" }
+          ]
+        }
+      }
+    },
+
+    "dairy": {
+      "groupName": "Молочные и молокосодержащие продукты",
+      "description": "Молоко, кефир, йогурт, сметана, творог, сыр, масло",
+      "items": {
+        "milk_pasteurized": {
+          "name": "Молоко пастеризованное питьевое 2.5%",
+          "group": "dairy",
+          "standards": {
+            "gost": "ГОСТ 31450-2013",
+            "gostTitle": "Молоко питьевое. Технические условия",
+            "tr_ts": "ТР ТС 033/2013",
+            "tr_tsTitle": "О безопасности молока и молочной продукции"
+          },
+          "physicochemical": {
+            "acidity": { "min": 16.0, "max": 21.0, "unit": "°Т" },
+            "moisture": { "min": null, "max": null, "unit": "%" },
+            "fat": { "min": 2.5, "max": 2.5, "unit": "%" },
+            "protein": { "min": 2.8, "max": null, "unit": "%" },
+            "salt": { "min": null, "max": null, "unit": "%" },
+            "density": { "min": 1.027, "max": null, "unit": "г/см³" },
+            "kmafanm": { "min": null, "max": 100000, "unit": "КОЕ/мл" },
+            "somaticCells": { "min": null, "max": 500000, "unit": "тыс/мл" }
+          },
+          "storageConditions": {
+            "maxTemp": 6,
+            "minTemp": 2,
+            "maxRH": null,
+            "shelfLife_days": 10
+          },
+          "microbiologicalModel": {
+            "Tmin": -1.5,
+            "b": 0.028,
+            "Nmax": 1e8,
+            "h0": 0.5
+          },
+          "moistureModel": {
+            "diffusionCoeff": 1e-9,
+            "thickness": 0.01
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200102694", "description": "ГОСТ 31450-2013" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/499050787", "description": "ТР ТС 033/2013" },
+            { "source": "Техэксперт", "url": "https://www.cntd.ru", "description": "База ГОСТ Техэксперт" }
+          ]
+        },
+
+        "kefir_1percent": {
+          "name": "Кефир 1% жирности",
+          "group": "dairy",
+          "standards": {
+            "gost": "ГОСТ 31454-2012",
+            "gostTitle": "Кефир. Технические условия",
+            "tr_ts": "ТР ТС 033/2013",
+            "tr_tsTitle": "О безопасности молока и молочной продукции"
+          },
+          "physicochemical": {
+            "acidity": { "min": 85.0, "max": 130.0, "unit": "°Т" },
+            "fat": { "min": 1.0, "max": 1.0, "unit": "%" },
+            "protein": { "min": 2.8, "max": null, "unit": "%" },
+            "moisture": { "min": null, "max": null, "unit": "%" },
+            "alcohol": { "min": 0.2, "max": 0.6, "unit": "%" },
+            "kmafanm": { "min": 1e7, "max": null, "unit": "КОЕ/мл", "note": "Не менее 10^7 КОЕ/мл (живые микроорганизмы)" }
+          },
+          "storageConditions": {
+            "maxTemp": 6,
+            "minTemp": 2,
+            "shelfLife_days": 14
+          },
+          "microbiologicalModel": {
+            "Tmin": -1.5,
+            "b": 0.025,
+            "Nmax": 1e9,
+            "h0": 0.3
+          },
+          "moistureModel": {
+            "diffusionCoeff": 8e-10,
+            "thickness": 0.01
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200102701", "description": "ГОСТ 31454-2012" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/499050787", "description": "ТР ТС 033/2013" }
+          ]
+        },
+
+        "smetana_20percent": {
+          "name": "Сметана 20% жирности",
+          "group": "dairy",
+          "standards": {
+            "gost": "ГОСТ 31452-2012",
+            "gostTitle": "Сметана. Технические условия",
+            "tr_ts": "ТР ТС 033/2013",
+            "tr_tsTitle": "О безопасности молока и молочной продукции"
+          },
+          "physicochemical": {
+            "acidity": { "min": 60.0, "max": 100.0, "unit": "°Т" },
+            "fat": { "min": 20.0, "max": 20.0, "unit": "%" },
+            "protein": { "min": 2.5, "max": null, "unit": "%" },
+            "moisture": { "min": null, "max": 73.0, "unit": "%" },
+            "kmafanm": { "min": 1e7, "max": null, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 6,
+            "minTemp": 2,
+            "shelfLife_days": 21
+          },
+          "microbiologicalModel": {
+            "Tmin": -1.5,
+            "b": 0.022,
+            "Nmax": 1e9,
+            "h0": 0.4
+          },
+          "moistureModel": {
+            "diffusionCoeff": 5e-10,
+            "thickness": 0.02
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200102699", "description": "ГОСТ 31452-2012" }
+          ]
+        },
+
+        "cheese_russian": {
+          "name": "Сыр полутвёрдый «Российский»",
+          "group": "dairy",
+          "standards": {
+            "gost": "ГОСТ Р 52972-2008",
+            "gostTitle": "Сыры полутвёрдые. Технические условия",
+            "tr_ts": "ТР ТС 033/2013",
+            "tr_tsTitle": "О безопасности молока и молочной продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 43.0, "unit": "%" },
+            "fat": { "min": 50.0, "max": 50.0, "unit": "% в сухом веществе" },
+            "salt": { "min": 1.3, "max": 1.8, "unit": "%" },
+            "acidity": { "min": null, "max": null, "unit": "pH", "note": "pH 5.25–5.45" },
+            "ph": { "min": 5.25, "max": 5.45 },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 8,
+            "minTemp": 0,
+            "maxRH": 87,
+            "shelfLife_days": 60
+          },
+          "microbiologicalModel": {
+            "Tmin": 2,
+            "b": 0.015,
+            "Nmax": 1e6,
+            "h0": 0.6
+          },
+          "moistureModel": {
+            "diffusionCoeff": 2e-11,
+            "thickness": 0.08
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200072522", "description": "ГОСТ Р 52972-2008" }
+          ]
+        }
+      }
+    },
+
+    "bread": {
+      "groupName": "Хлебобулочные и мучные кондитерские изделия",
+      "description": "Хлеб, батоны, булки, сушки, печенье, пряники",
+      "items": {
+        "wheat_bread_1grade": {
+          "name": "Хлеб пшеничный из муки 1-го сорта",
+          "group": "bread",
+          "standards": {
+            "gost": "ГОСТ 26987-86",
+            "gostTitle": "Хлеб белый из пшеничной муки высшего, первого и второго сортов",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 43.0, "unit": "%" },
+            "acidity": { "min": null, "max": 3.5, "unit": "°Н (градусы Неймана)" },
+            "porosity": { "min": 72.0, "max": null, "unit": "%" },
+            "fat": { "min": null, "max": null, "unit": "%" },
+            "salt": { "min": null, "max": 1.5, "unit": "%" },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "maxRH": 75,
+            "shelfLife_days": 3
+          },
+          "microbiologicalModel": {
+            "Tmin": 5,
+            "b": 0.025,
+            "Nmax": 1e7,
+            "h0": 0.5
+          },
+          "moistureModel": {
+            "diffusionCoeff": 3e-10,
+            "thickness": 0.1
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200023382", "description": "ГОСТ 26987-86 в системе КОДЕКС" },
+            { "source": "Техэксперт", "url": "https://www.cntd.ru", "description": "Техэксперт — база ГОСТ" }
+          ]
+        },
+
+        "rye_bread": {
+          "name": "Хлеб ржаной «Дарницкий»",
+          "group": "bread",
+          "standards": {
+            "gost": "ГОСТ 26983-86",
+            "gostTitle": "Хлеб «Дарницкий». Технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 47.0, "unit": "%" },
+            "acidity": { "min": 7.0, "max": 11.0, "unit": "°Н" },
+            "porosity": { "min": 57.0, "max": null, "unit": "%" },
+            "salt": { "min": null, "max": 1.5, "unit": "%" },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "maxRH": 75,
+            "shelfLife_days": 4
+          },
+          "microbiologicalModel": {
+            "Tmin": 5,
+            "b": 0.022,
+            "Nmax": 1e7,
+            "h0": 0.4
+          },
+          "moistureModel": {
+            "diffusionCoeff": 3.5e-10,
+            "thickness": 0.1
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200023377", "description": "ГОСТ 26983-86" }
+          ]
+        },
+
+        "cookies_sugar": {
+          "name": "Печенье сахарное",
+          "group": "bread",
+          "standards": {
+            "gost": "ГОСТ 24901-2014",
+            "gostTitle": "Печенье. Общие технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 10.0, "unit": "%" },
+            "fat": { "min": null, "max": 30.0, "unit": "%" },
+            "acidity": { "min": null, "max": 2.5, "unit": "°Н" },
+            "alkalinity": { "min": null, "max": 2.0, "unit": "°" },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "maxRH": 75,
+            "shelfLife_days": 120
+          },
+          "microbiologicalModel": {
+            "Tmin": 5,
+            "b": 0.015,
+            "Nmax": 1e6,
+            "h0": 0.8
+          },
+          "moistureModel": {
+            "diffusionCoeff": 5e-11,
+            "thickness": 0.01
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200112675", "description": "ГОСТ 24901-2014" }
+          ]
+        }
+      }
+    },
+
+    "fish": {
+      "groupName": "Рыбные продукты и морепродукты",
+      "description": "Рыба охлаждённая, мороженая, солёная, копчёная, консервы",
+      "items": {
+        "herring_salted": {
+          "name": "Сельдь солёная атлантическая",
+          "group": "fish",
+          "standards": {
+            "gost": "ГОСТ 815-2004",
+            "gostTitle": "Сельди солёные. Технические условия",
+            "tr_ts": "ТР ЕАЭС 040/2016",
+            "tr_tsTitle": "О безопасности рыбы и рыбной продукции"
+          },
+          "physicochemical": {
+            "salt": { "min": 6.0, "max": 12.0, "unit": "%" },
+            "fat": { "min": 6.0, "max": null, "unit": "%" },
+            "moisture": { "min": null, "max": 72.0, "unit": "%" },
+            "acidity": { "min": null, "max": null, "unit": "pH", "note": "pH 5.5–6.5" },
+            "histamine": { "min": null, "max": 100.0, "unit": "мг/кг" },
+            "kmafanm": { "min": null, "max": 100000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": -8,
+            "shelfLife_days": 45
+          },
+          "microbiologicalModel": {
+            "Tmin": -5,
+            "b": 0.02,
+            "Nmax": 1e8,
+            "h0": 0.6
+          },
+          "moistureModel": {
+            "diffusionCoeff": 4e-11,
+            "thickness": 0.03
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200036183", "description": "ГОСТ 815-2004" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/456036610", "description": "ТР ЕАЭС 040/2016" }
+          ]
+        },
+
+        "fish_smoked_cold": {
+          "name": "Рыба холодного копчения (скумбрия)",
+          "group": "fish",
+          "standards": {
+            "gost": "ГОСТ 11482-96",
+            "gostTitle": "Рыба холодного копчения. Технические условия",
+            "tr_ts": "ТР ЕАЭС 040/2016",
+            "tr_tsTitle": "О безопасности рыбы и рыбной продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 61.0, "unit": "%" },
+            "salt": { "min": 5.0, "max": 10.0, "unit": "%" },
+            "fat": { "min": 8.0, "max": null, "unit": "%" },
+            "benzo_a_pyrene": { "min": null, "max": 0.000002, "unit": "мг/кг (2 мкг/кг)", "note": "Канцероген — строгий контроль!" },
+            "histamine": { "min": null, "max": 100.0, "unit": "мг/кг" }
+          },
+          "storageConditions": {
+            "maxTemp": -18,
+            "shelfLife_days": 60
+          },
+          "microbiologicalModel": {
+            "Tmin": -5,
+            "b": 0.018,
+            "Nmax": 5e7,
+            "h0": 0.7
+          },
+          "moistureModel": {
+            "diffusionCoeff": 3e-11,
+            "thickness": 0.025
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200005360", "description": "ГОСТ 11482-96" }
+          ]
+        }
+      }
+    },
+
+    "fruits_vegetables": {
+      "groupName": "Плодоовощная продукция",
+      "description": "Свежие фрукты, овощи, консервы, соки",
+      "items": {
+        "apple_fresh": {
+          "name": "Яблоки свежие (столовые сорта)",
+          "group": "fruits_vegetables",
+          "standards": {
+            "gost": "ГОСТ 34314-2017",
+            "gostTitle": "Яблоки свежие. Технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": 82.0, "max": 88.0, "unit": "%" },
+            "acidity": { "min": 0.5, "max": 2.5, "unit": "% яблочной кислоты" },
+            "sugars": { "min": 8.0, "max": null, "unit": "%" },
+            "vitamin_c": { "min": 5.0, "max": null, "unit": "мг/100г" }
+          },
+          "storageConditions": {
+            "maxTemp": 4,
+            "minTemp": -1,
+            "maxRH": 95,
+            "shelfLife_days": 90
+          },
+          "moistureModel": {
+            "diffusionCoeff": 5e-10,
+            "thickness": 0.04
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200157820", "description": "ГОСТ 34314-2017" }
+          ]
+        },
+
+        "tomato_paste": {
+          "name": "Томатная паста (концентрат)",
+          "group": "fruits_vegetables",
+          "standards": {
+            "gost": "ГОСТ 3343-89",
+            "gostTitle": "Продукты из томатов концентрированные",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "dryMatter": { "min": 30.0, "max": null, "unit": "%" },
+            "acidity": { "min": null, "max": 2.5, "unit": "% лимонной кислоты" },
+            "salt": { "min": null, "max": 1.5, "unit": "%" },
+            "kmafanm": { "min": null, "max": 1000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "shelfLife_days": 730
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200022562", "description": "ГОСТ 3343-89" }
+          ]
+        }
+      }
+    },
+
+    "beverages": {
+      "groupName": "Безалкогольные напитки и соки",
+      "description": "Вода питьевая, соки, нектары, газированные напитки",
+      "items": {
+        "apple_juice": {
+          "name": "Сок яблочный натуральный осветлённый",
+          "group": "beverages",
+          "standards": {
+            "gost": "ГОСТ Р 52186-2003",
+            "gostTitle": "Соки фруктовые и овощные. Термины и определения",
+            "tr_ts": "ТР ТС 023/2011",
+            "tr_tsTitle": "Технический регламент на соковую продукцию из фруктов и овощей"
+          },
+          "physicochemical": {
+            "solubleSolids": { "min": 10.0, "max": null, "unit": "% (рефрактометрически)" },
+            "acidity": { "min": 0.2, "max": 1.5, "unit": "% яблочной кислоты" },
+            "ph": { "min": 3.3, "max": 4.0 },
+            "vitamin_c": { "min": null, "max": null, "unit": "мг/100мл" },
+            "kmafanm": { "min": null, "max": 50, "unit": "КОЕ/мл" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "shelfLife_days": 365
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200033020", "description": "ГОСТ Р 52186-2003" },
+            { "source": "Электронный фонд", "url": "https://docs.cntd.ru/document/499050684", "description": "ТР ТС 023/2011" }
+          ]
+        },
+
+        "drinking_water": {
+          "name": "Вода питьевая расфасованная",
+          "group": "beverages",
+          "standards": {
+            "gost": "ГОСТ Р 54316-2020",
+            "gostTitle": "Воды минеральные природные питьевые. Технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "ph": { "min": 6.5, "max": 8.5 },
+            "hardness": { "min": null, "max": 7.0, "unit": "ммоль/л" },
+            "chlorine_residual": { "min": null, "max": 0.3, "unit": "мг/л" },
+            "kmafanm": { "min": null, "max": 50, "unit": "КОЕ/мл" },
+            "nitrates": { "min": null, "max": 45.0, "unit": "мг/л" }
+          },
+          "storageConditions": {
+            "maxTemp": 25,
+            "shelfLife_days": 730
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200171804", "description": "ГОСТ Р 54316-2020" }
+          ]
+        }
+      }
+    },
+
+    "confectionery": {
+      "groupName": "Кондитерские изделия",
+      "description": "Конфеты, шоколад, карамель, мармелад, пастила, торты",
+      "items": {
+        "chocolate_dark": {
+          "name": "Шоколад тёмный (горький)",
+          "group": "confectionery",
+          "standards": {
+            "gost": "ГОСТ 31721-2012",
+            "gostTitle": "Шоколад. Общие технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": null, "max": 1.5, "unit": "%" },
+            "fat": { "min": 33.0, "max": null, "unit": "%" },
+            "cocoaMass": { "min": 55.0, "max": null, "unit": "%" },
+            "sugar": { "min": null, "max": 35.0, "unit": "%" },
+            "kmafanm": { "min": null, "max": 500, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 18,
+            "minTemp": 5,
+            "maxRH": 75,
+            "shelfLife_days": 365
+          },
+          "microbiologicalModel": {
+            "Tmin": 10,
+            "b": 0.01,
+            "Nmax": 1e6,
+            "h0": 0.9
+          },
+          "moistureModel": {
+            "diffusionCoeff": 1e-12,
+            "thickness": 0.01
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200095570", "description": "ГОСТ 31721-2012" }
+          ]
+        },
+
+        "marmalade": {
+          "name": "Мармелад фруктово-ягодный",
+          "group": "confectionery",
+          "standards": {
+            "gost": "ГОСТ 6442-2014",
+            "gostTitle": "Мармелад. Общие технические условия",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "moisture": { "min": 15.0, "max": 26.0, "unit": "%" },
+            "acidity": { "min": 0.5, "max": 2.0, "unit": "%" },
+            "reducingSugars": { "min": 10.0, "max": 25.0, "unit": "%" },
+            "kmafanm": { "min": null, "max": 500, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 20,
+            "maxRH": 80,
+            "shelfLife_days": 90
+          },
+          "moistureModel": {
+            "diffusionCoeff": 2e-11,
+            "thickness": 0.015
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200113419", "description": "ГОСТ 6442-2014" }
+          ]
+        }
+      }
+    },
+
+    "catering": {
+      "groupName": "Продукция общественного питания",
+      "description": "Готовые блюда, полуфабрикаты для ресторанов и кафе",
+      "items": {
+        "salad_dressed": {
+          "name": "Салат овощной заправленный (готовое блюдо)",
+          "group": "catering",
+          "standards": {
+            "gost": "ГОСТ Р 50763-2007",
+            "gostTitle": "Услуги общественного питания. Продукция общественного питания",
+            "tr_ts": "ТР ТС 021/2011",
+            "tr_tsTitle": "О безопасности пищевой продукции"
+          },
+          "physicochemical": {
+            "acidity": { "min": null, "max": null, "unit": "pH", "note": "pH 4.2–6.8 в зависимости от состава" },
+            "salt": { "min": 0.5, "max": 2.0, "unit": "%" },
+            "moisture": { "min": 65.0, "max": 90.0, "unit": "%" },
+            "kmafanm": { "min": null, "max": 100000, "unit": "КОЕ/г" }
+          },
+          "storageConditions": {
+            "maxTemp": 6,
+            "shelfLife_days": 1,
+            "note": "Реализация в течение 1 часа при отсутствии охлаждения; до 12 часов при T≤6°C"
+          },
+          "microbiologicalModel": {
+            "Tmin": -1.5,
+            "b": 0.035,
+            "Nmax": 5e8,
+            "h0": 0.2
+          },
+          "moistureModel": {
+            "diffusionCoeff": 1e-9,
+            "thickness": 0.005
+          },
+          "verifiedLinks": [
+            { "source": "Кодекс", "url": "https://docs.cntd.ru/document/1200048940", "description": "ГОСТ Р 50763-2007" }
+          ]
+        }
+      }
+    }
+  }
+}

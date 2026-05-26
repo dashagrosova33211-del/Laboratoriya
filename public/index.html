@@ -1,0 +1,2901 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Лаборатория продовольственной безопасности</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            lab: {
+              50:  '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+              300: '#86efac', 400: '#4ade80', 500: '#22c55e',
+              600: '#16a34a', 700: '#15803d', 800: '#166534',
+              900: '#14532d', 950: '#052e16'
+            },
+            slate: {
+              850: '#172033', 950: '#0b1120'
+            }
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          animation: {
+            'fade-in':    'fadeIn 0.3s ease-in-out',
+            'slide-up':   'slideUp 0.4s ease-out',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite',
+            'spin-slow':  'spin 2s linear infinite'
+          },
+          keyframes: {
+            fadeIn:  { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .gradient-text {
+      background: linear-gradient(135deg, #22c55e 0%, #06b6d4 50%, #8b5cf6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-glow { box-shadow: 0 0 30px rgba(34,197,94,0.08), 0 4px 24px rgba(0,0,0,0.4); }
+    .card-glow-blue { box-shadow: 0 0 30px rgba(6,182,212,0.08), 0 4px 24px rgba(0,0,0,0.4); }
+    .card-glow-purple { box-shadow: 0 0 30px rgba(139,92,246,0.08), 0 4px 24px rgba(0,0,0,0.4); }
+    .sidebar-item { transition: all 0.2s ease; }
+    .sidebar-item:hover { transform: translateX(4px); }
+    .sidebar-item.active { border-left: 3px solid #22c55e; }
+    .tab-active { border-bottom: 2px solid #22c55e; color: #22c55e; }
+    .status-pass { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #4ade80; }
+    .status-fail { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; }
+    .status-warn { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; }
+    .risk-critical { background: rgba(220,38,38,0.2); border-left: 4px solid #dc2626; }
+    .risk-high     { background: rgba(234,88,12,0.2); border-left: 4px solid #ea580c; }
+    .risk-medium   { background: rgba(202,138,4,0.2); border-left: 4px solid #ca8a04; }
+    .risk-low      { background: rgba(21,128,61,0.2); border-left: 4px solid #15803d; }
+    .input-lab {
+      background: rgba(30,41,59,0.8); border: 1px solid #334155; color: #e2e8f0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-lab:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    .btn-primary {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      transition: all 0.2s ease; position: relative; overflow: hidden;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(22,163,74,0.35); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary { background: rgba(51,65,85,0.8); border: 1px solid #475569; transition: all 0.2s; }
+    .btn-secondary:hover { background: rgba(71,85,105,0.8); border-color: #64748b; }
+    .chart-container { position: relative; height: 300px; }
+    .molecule-bg {
+      background-image: radial-gradient(circle at 20% 50%, rgba(34,197,94,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(6,182,212,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 60% 80%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    }
+    .progress-bar-inner { transition: width 0.8s ease-in-out; }
+    .step-connector { flex: 1; height: 2px; background: linear-gradient(90deg, #22c55e, #334155); }
+    .step-connector.inactive { background: #334155; }
+    .highlight-row:hover { background: rgba(34,197,94,0.05); }
+    .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: white; color: black; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen molecule-bg">
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 no-print">
+  <div class="flex items-center justify-between px-6 py-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-lab-600 to-lab-800 flex items-center justify-center shadow-lg">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white leading-tight">Лаборатория продовольственной безопасности</h1>
+        <p class="text-xs text-slate-500">Научно-образовательный комплекс • Автономный режим</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="server-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
+        <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="status-dot"></div>
+        <span class="text-xs text-slate-400" id="status-text">Подключение...</span>
+      </div>
+      <div class="text-xs text-slate-600 hidden md:block">v1.0.0 • 100% локально</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════ LAYOUT ═══════════════════ -->
+<div class="flex h-[calc(100vh-57px)]">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-slate-900/80 border-r border-slate-800 flex flex-col overflow-y-auto no-print flex-shrink-0">
+    <nav class="p-3 space-y-1 flex-1">
+      <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider px-3 py-2">Модули системы</p>
+
+      <button onclick="showModule('dashboard')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white active" id="nav-dashboard">
+        <svg class="w-4 h-4 text-lab-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z"/>
+        </svg>
+        <span>Дашборд</span>
+      </button>
+
+      <button onclick="showModule('library')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-library">
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        <span>Библиотека ГОСТ</span>
+      </button>
+
+      <button onclick="showModule('functional')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-functional">
+        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+        </svg>
+        <span>Функциональные продукты</span>
+      </button>
+
+      <button onclick="showModule('lab')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-lab">
+        <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h16a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+        </svg>
+        <span>Симулятор лаборатории</span>
+      </button>
+
+      <button onclick="showModule('math')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-math">
+        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span>Математическое моделирование</span>
+      </button>
+
+      <button onclick="showModule('expert')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-expert">
+        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span>Экспертное заключение</span>
+      </button>
+
+      <div class="border-t border-slate-800 my-2"></div>
+      <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider px-3 py-2">ХАССП</p>
+
+      <button onclick="showModule('haccp')"
+        class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white" id="nav-haccp">
+        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <span>Анализ рисков ХАССП</span>
+      </button>
+    </nav>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="p-3 border-t border-slate-800">
+      <div class="bg-slate-800/50 rounded-lg p-3">
+        <p class="text-xs text-slate-500 mb-1">Режим работы</p>
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-lab-400"></div>
+          <span class="text-xs text-lab-300 font-medium">100% Автономный</span>
+        </div>
+        <p class="text-xs text-slate-600 mt-1">Без внешних API</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto">
+
+    <!-- ═══════ MODULE: DASHBOARD ═══════ -->
+    <div id="module-dashboard" class="module-panel p-6 animate-fade-in">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold gradient-text mb-1">Добро пожаловать</h2>
+        <p class="text-slate-400 text-sm">Научно-образовательный комплекс продовольственной безопасности</p>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 card-glow">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-slate-500 font-medium uppercase">Групп продуктов</span>
+            <div class="w-8 h-8 rounded-lg bg-lab-900/50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-lab-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-white" id="stat-groups">—</p>
+          <p class="text-xs text-slate-500 mt-1">В базе знаний</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 card-glow-blue">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-slate-500 font-medium uppercase">Продуктов</span>
+            <div class="w-8 h-8 rounded-lg bg-cyan-900/30 flex items-center justify-center">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-white" id="stat-products">—</p>
+          <p class="text-xs text-slate-500 mt-1">С эталонными значениями</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 card-glow-purple">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-slate-500 font-medium uppercase">Тех. карт</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-900/30 flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+              </svg>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-white" id="stat-functional">—</p>
+          <p class="text-xs text-slate-500 mt-1">Инновационных продуктов</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-slate-500 font-medium uppercase">Режим</span>
+            <div class="w-8 h-8 rounded-lg bg-lab-900/30 flex items-center justify-center">
+              <svg class="w-4 h-4 text-lab-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+          </div>
+          <p class="text-lg font-bold text-lab-400">OFFLINE</p>
+          <p class="text-xs text-slate-500 mt-1">Все данные локальны</p>
+        </div>
+      </div>
+
+      <!-- QUICK ACCESS + RECENT -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-lab-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Быстрый старт
+          </h3>
+          <div class="space-y-2">
+            <button onclick="showModule('lab')"
+              class="w-full flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-lab-700 transition-all group">
+              <div class="w-8 h-8 rounded-lg bg-yellow-900/30 flex items-center justify-center group-hover:bg-yellow-900/50">
+                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h16a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-medium text-white">Начать лабораторную работу</p>
+                <p class="text-xs text-slate-500">Симулятор экспертизы</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+            <button onclick="showModule('expert')"
+              class="w-full flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-red-700 transition-all group">
+              <div class="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center group-hover:bg-red-900/50">
+                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-medium text-white">Сформировать заключение</p>
+                <p class="text-xs text-slate-500">Экспертиза + ХАССП</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+            <button onclick="showModule('math')"
+              class="w-full flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-orange-700 transition-all group">
+              <div class="w-8 h-8 rounded-lg bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-900/50">
+                <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-medium text-white">Математическое моделирование</p>
+                <p class="text-xs text-slate-500">Кинетика порчи, диффузия</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Справочная информация
+          </h3>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-800/50">
+              <div class="w-1.5 h-1.5 rounded-full bg-lab-400 mt-2 flex-shrink-0"></div>
+              <div>
+                <p class="text-sm text-slate-300">4 типа экспериментов</p>
+                <p class="text-xs text-slate-500">Титрование, высушивание, экстракция, определение соли</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-800/50">
+              <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 flex-shrink-0"></div>
+              <div>
+                <p class="text-sm text-slate-300">3 математические модели</p>
+                <p class="text-xs text-slate-500">Баранья, Вуд (логистика), 2-й закон диффузии Фика</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-800/50">
+              <div class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 flex-shrink-0"></div>
+              <div>
+                <p class="text-sm text-slate-300">Все ГОСТ и ТР ТС локально</p>
+                <p class="text-xs text-slate-500">С верифицированными ссылками на госреестры</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-800/50">
+              <div class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0"></div>
+              <div>
+                <p class="text-sm text-slate-300">Полная система ХАССП</p>
+                <p class="text-xs text-slate-500">6 групп продуктов, ККТ, корректирующие действия</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DB STATUS TABLE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-white mb-4">Статус базы данных</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800">
+                <th class="text-left text-xs text-slate-500 font-medium py-2 pr-4">Группа продуктов</th>
+                <th class="text-center text-xs text-slate-500 font-medium py-2 pr-4">Кол-во продуктов</th>
+                <th class="text-center text-xs text-slate-500 font-medium py-2">Статус</th>
+              </tr>
+            </thead>
+            <tbody id="db-status-table">
+              <tr><td colspan="3" class="text-center text-slate-600 py-4">Загрузка...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: LIBRARY ═══════ -->
+    <div id="module-library" class="module-panel p-6 animate-fade-in hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-white mb-1">Библиотека ГОСТ и ТР ТС</h2>
+          <p class="text-slate-400 text-sm">Эталонные физико-химические показатели и нормативная база</p>
+        </div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-5">
+        <div class="flex gap-3">
+          <div class="flex-1 relative">
+            <svg class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="gost-search" placeholder="Поиск по названию, номеру ГОСТ или ТР ТС..."
+              class="input-lab w-full pl-9 pr-4 py-2.5 rounded-lg text-sm"
+              oninput="debounceSearch(this.value)" />
+          </div>
+          <button onclick="clearSearch()" class="btn-secondary px-4 py-2 rounded-lg text-sm text-slate-300">Сбросить</button>
+        </div>
+        <div id="search-results-info" class="text-xs text-slate-500 mt-2 hidden"></div>
+      </div>
+
+      <!-- GROUP TABS -->
+      <div class="flex gap-1 mb-4 flex-wrap" id="group-tabs">
+        <button onclick="loadGroup('all')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-lab-800 text-lab-200 border border-lab-700 active-tab">
+          Все группы
+        </button>
+      </div>
+
+      <!-- PRODUCT CARDS GRID -->
+      <div id="product-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="col-span-3 text-center text-slate-600 py-12">
+          <div class="animate-spin-slow w-8 h-8 border-2 border-lab-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+          Загрузка базы данных...
+        </div>
+      </div>
+
+      <!-- PRODUCT DETAIL MODAL -->
+      <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
+          <div id="product-modal-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: FUNCTIONAL FOODS ═══════ -->
+    <div id="module-functional" class="module-panel p-6 animate-fade-in hidden">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">База функциональных продуктов</h2>
+        <p class="text-slate-400 text-sm">Готовые технологические карты инновационных обогащённых продуктов</p>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap" id="functional-category-filters">
+        <button onclick="filterFunctional('all')" class="px-3 py-1.5 rounded-full text-xs font-medium bg-purple-800 text-purple-200 border border-purple-700">
+          Все категории
+        </button>
+      </div>
+
+      <div id="functional-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <div class="col-span-2 text-center text-slate-600 py-12">
+          <div class="animate-spin-slow w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+          Загрузка технологических карт...
+        </div>
+      </div>
+
+      <!-- FUNCTIONAL DETAIL MODAL -->
+      <div id="functional-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
+          <div id="functional-modal-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: LAB SIMULATOR ═══════ -->
+    <div id="module-lab" class="module-panel p-6 animate-fade-in hidden">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Симулятор лабораторных работ</h2>
+        <p class="text-slate-400 text-sm">Пошаговая интерактивная симуляция физико-химической экспертизы</p>
+      </div>
+
+      <!-- STEP 0: SETUP -->
+      <div id="lab-setup" class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5">
+        <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-lab-700 text-white text-xs flex items-center justify-center font-bold">1</span>
+          Настройка эксперимента
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Группа продуктов</label>
+            <select id="lab-group" class="input-lab w-full px-3 py-2.5 rounded-lg text-sm" onchange="loadLabProducts()">
+              <option value="">— Выберите группу —</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Продукт</label>
+            <select id="lab-product" class="input-lab w-full px-3 py-2.5 rounded-lg text-sm" disabled>
+              <option value="">— Сначала выберите группу —</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Тип эксперимента</label>
+            <select id="lab-experiment" class="input-lab w-full px-3 py-2.5 rounded-lg text-sm">
+              <option value="titration">Определение кислотности (титрование)</option>
+              <option value="drying">Определение влажности (высушивание)</option>
+              <option value="extraction">Определение жира (Сокслет)</option>
+              <option value="salt_determination">Определение соли (Мор)</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button onclick="initLab()" class="btn-primary px-5 py-2.5 rounded-lg text-sm text-white font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Начать эксперимент
+          </button>
+        </div>
+      </div>
+
+      <!-- LAB PROGRESS -->
+      <div id="lab-progress-section" class="hidden">
+        <!-- EXPERIMENT INFO HEADER -->
+        <div id="lab-info-header" class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700 rounded-xl p-4 mb-4">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- STEP NAVIGATOR -->
+        <div class="flex items-center gap-1 mb-5 overflow-x-auto pb-2" id="lab-step-nav">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- CURRENT STEP -->
+        <div id="lab-step-panel" class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-4">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- STEP RESULT -->
+        <div id="lab-step-result" class="hidden bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- FINAL CALCULATION -->
+        <div id="lab-final-section" class="hidden bg-slate-900 border border-lab-800 rounded-xl p-5 mb-4">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-lab-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M12 7h.01M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+            </svg>
+            Итоговый расчёт показателя
+          </h3>
+          <div id="lab-final-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+          <button onclick="runFinalCalculation()" class="btn-primary px-5 py-2.5 rounded-lg text-sm text-white font-medium">
+            Рассчитать
+          </button>
+          <div id="lab-calculation-result" class="mt-4 hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: MATH MODELING ═══════ -->
+    <div id="module-math" class="module-panel p-6 animate-fade-in hidden">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Математическое моделирование</h2>
+        <p class="text-slate-400 text-sm">Кинетика микробиологической порчи и динамика влагопереноса</p>
+      </div>
+
+      <!-- MODEL TABS -->
+      <div class="flex gap-1 border-b border-slate-800 mb-6">
+        <button onclick="switchMathModel('baranyi')" class="math-tab px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent transition-all tab-active" data-model="baranyi">
+          Модель Баранья
+        </button>
+        <button onclick="switchMathModel('wood')" class="math-tab px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent transition-all" data-model="wood">
+          Модель Вуда
+        </button>
+        <button onclick="switchMathModel('fick')" class="math-tab px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent transition-all" data-model="fick">
+          Закон диффузии Фика
+        </button>
+        <button onclick="switchMathModel('shelflife')" class="math-tab px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent transition-all" data-model="shelflife">
+          Прогноз срока годности
+        </button>
+      </div>
+
+      <!-- BARANYI -->
+      <div id="math-baranyi" class="math-model-panel">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <h3 class="text-sm font-semibold text-white mb-1">Модель Баранья–Робертс (1994)</h3>
+              <p class="text-xs text-slate-500 mb-3">Кинетика роста КМАФАнМ с учётом лаг-фазы и температуры хранения</p>
+              <div class="bg-slate-800 rounded-lg p-3 mb-4">
+                <p class="text-xs text-cyan-300 font-mono">μmax = [b·(T - Tmin)]²</p>
+                <p class="text-xs text-slate-500 mt-1">Модель квадратного корня Ратковски</p>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">N₀ — начальный уровень (КОЕ/г)</label>
+                  <input type="number" id="b-n0" value="1000" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Nmax — максимальный уровень (КОЕ/г)</label>
+                  <input type="number" id="b-nmax" value="100000000" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Температура хранения (°C)</label>
+                  <input type="number" id="b-temp" value="4" min="-10" max="37" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Время расчёта (часы)</label>
+                  <input type="number" id="b-maxtime" value="168" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Tmin — мин. T роста (°C)</label>
+                  <input type="number" id="b-tmin" value="-1.5" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">h₀ — физ. состояние (0.1–2)</label>
+                  <input type="number" id="b-h0" value="0.5" step="0.1" class="input-lab w-full px-3 py-2 rounded-lg text-sm" />
+                </div>
+                <button onclick="runBaranyi()" class="btn-primary w-full py-2.5 rounded-lg text-sm text-white font-medium">
+                  Рассчитать кинетику роста
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div id="baranyi-params" class="hidden mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <!-- Filled dynamically -->
+              </div>
+              <div class="chart-container">
+                <canvas id="baranyi-chart"></canvas>
+              </div>
+              <p class="text-xs text-slate-600 text-center mt-2">Линия log₁₀(N) по времени. Пунктир — порог порчи (10⁷ КОЕ/г)</p>
+            </div>
+            <div id="baranyi-interpretation" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <!-- Filled dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WOOD -->
+      <div id="math-wood" class="math-model-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <h3 class="text-sm font-semibold text-white mb-1">Логистическая модель Вуда–Ферхюльста</h3>
+              <p class="text-xs text-slate-500 mb-3">Рост популяции микроорганизмов по S-образной кривой</p>
+              <div class="bg-slate-800 rounded-lg p-3 mb-4">
+                <p class="text-xs text-cyan-300 font-mono">N(t) = Nmax / (1 + ((Nmax/N₀)−1)·e^{−rt})</p>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">N₀ (КОЕ/г)</label>
+                  <input type="number" id="w-n0" value="1000" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Nmax (КОЕ/г)</label>
+                  <input type="number" id="w-nmax" value="1000000000" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">r — скорость роста (ч⁻¹)</label>
+                  <input type="number" id="w-r" value="0.05" step="0.001" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Время расчёта (часы)</label>
+                  <input type="number" id="w-maxtime" value="168" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <button onclick="runWood()" class="btn-primary w-full py-2.5 rounded-lg text-sm text-white font-medium">
+                  Рассчитать
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div id="wood-params" class="hidden mb-4 grid grid-cols-3 gap-3"></div>
+              <div class="chart-container">
+                <canvas id="wood-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FICK -->
+      <div id="math-fick" class="math-model-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <h3 class="text-sm font-semibold text-white mb-1">2-й закон диффузии Фика</h3>
+              <p class="text-xs text-slate-500 mb-3">Динамика изменения влажности продукта при хранении</p>
+              <div class="bg-slate-800 rounded-lg p-3 mb-4">
+                <p class="text-xs text-cyan-300 font-mono">MR(t) = 8/π² · Σ [1/(2n+1)²] · e^{−Dπ²(2n+1)²t/L²}</p>
+                <p class="text-xs text-slate-500 mt-1">M(t) = Meq + (M₀ − Meq) · MR(t)</p>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">M₀ — начальная влажность (%)</label>
+                  <input type="number" id="f-m0" value="40" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Meq — равновесная влажность (%)</label>
+                  <input type="number" id="f-meq" value="12" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">D — коэффициент диффузии (м²/с)</label>
+                  <input type="number" id="f-d" value="0.0000000003" step="0.0000000001" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Толщина продукта (м)</label>
+                  <input type="number" id="f-thickness" value="0.05" step="0.005" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-400 mb-1">Время расчёта (часы)</label>
+                  <input type="number" id="f-maxtime" value="72" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+                </div>
+                <button onclick="runFick()" class="btn-primary w-full py-2.5 rounded-lg text-sm text-white font-medium">
+                  Рассчитать диффузию
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-2 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div id="fick-params" class="hidden mb-4 grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+              <div class="chart-container">
+                <canvas id="fick-chart"></canvas>
+              </div>
+            </div>
+            <div id="fick-interpretation" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHELF LIFE -->
+      <div id="math-shelflife" class="math-model-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+              <h3 class="text-sm font-semibold text-white">Прогноз срока годности</h3>
+              <p class="text-xs text-slate-500">Комплексный анализ на основе микробиологии и влагопереноса</p>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Группа продуктов</label>
+                <select id="sl-group" class="input-lab w-full px-3 py-2 rounded-lg text-sm" onchange="loadSlProducts()">
+                  <option value="">— Выбрать —</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Продукт</label>
+                <select id="sl-product" class="input-lab w-full px-3 py-2 rounded-lg text-sm" disabled>
+                  <option value="">— Сначала группу —</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Температура хранения (°C)</label>
+                <input type="number" id="sl-temp" value="4" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Начальный уровень КМАФАнМ (КОЕ/г)</label>
+                <input type="number" id="sl-n0" value="1000" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">ОВВ хранения (%)</label>
+                <input type="number" id="sl-rh" value="75" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Тип упаковки</label>
+                <select id="sl-packaging" class="input-lab w-full px-3 py-2 rounded-lg text-sm">
+                  <option value="standard">Стандартная</option>
+                  <option value="vacuum">Вакуумная (×2.5)</option>
+                  <option value="modified_atmosphere">МАП (×2.0)</option>
+                  <option value="hermetic">Герметичная (×1.8)</option>
+                  <option value="open">Открытая (×0.6)</option>
+                </select>
+              </div>
+              <button onclick="runShelfLife()" class="btn-primary w-full py-2.5 rounded-lg text-sm text-white font-medium">
+                Рассчитать срок годности
+              </button>
+            </div>
+          </div>
+          <div class="lg:col-span-2" id="shelf-life-result">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-600">
+              <svg class="w-12 h-12 mx-auto mb-3 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+              </svg>
+              <p>Выберите продукт и параметры для расчёта прогноза</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: EXPERT CONCLUSION ═══════ -->
+    <div id="module-expert" class="module-panel p-6 animate-fade-in hidden">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Экспертное заключение</h2>
+        <p class="text-slate-400 text-sm">Автоматическое сравнение с ГОСТ + генерация официального заключения + анализ ХАССП</p>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <!-- INPUT PANEL -->
+        <div class="xl:col-span-2 space-y-4">
+          <!-- PRODUCT SELECTION -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-white mb-3">Идентификация продукта</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Группа</label>
+                <select id="exp-group" class="input-lab w-full px-3 py-2.5 rounded-lg text-sm" onchange="loadExpProducts()">
+                  <option value="">— Выбрать —</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Наименование продукта</label>
+                <select id="exp-product" class="input-lab w-full px-3 py-2.5 rounded-lg text-sm" disabled>
+                  <option value="">— Сначала группу —</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Номер партии</label>
+                <input type="text" id="exp-batch" placeholder="Например: Б-2024-001" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Производитель</label>
+                <input type="text" id="exp-manufacturer" placeholder="Наименование предприятия" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- MEASURED VALUES -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-white mb-3">Результаты анализов</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Кислотность (°Т)</label>
+                <input type="number" id="mv-acidity" placeholder="Например: 88" step="0.1" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Влажность (%)</label>
+                <input type="number" id="mv-moisture" placeholder="Например: 42.5" step="0.1" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Массовая доля жира (%)</label>
+                <input type="number" id="mv-fat" placeholder="Например: 20.0" step="0.1" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Массовая доля белка (%)</label>
+                <input type="number" id="mv-protein" placeholder="Например: 3.2" step="0.1" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Массовая доля соли (%)</label>
+                <input type="number" id="mv-salt" placeholder="Например: 1.5" step="0.01" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">КМАФАнМ (КОЕ/г)</label>
+                <input type="number" id="mv-kmafanm" placeholder="Например: 50000" class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- ORGANOLEPTICS -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-white mb-3">Органолептические показатели (1–5 баллов)</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs text-slate-400">Внешний вид</label>
+                <div class="flex gap-1" id="score-appearance">
+                  <!-- Stars -->
+                </div>
+                <input type="hidden" id="org-appearance" value="5"/>
+              </div>
+              <div class="flex items-center justify-between">
+                <label class="text-xs text-slate-400">Запах</label>
+                <div class="flex gap-1" id="score-smell"></div>
+                <input type="hidden" id="org-smell" value="5"/>
+              </div>
+              <div class="flex items-center justify-between">
+                <label class="text-xs text-slate-400">Вкус</label>
+                <div class="flex gap-1" id="score-taste"></div>
+                <input type="hidden" id="org-taste" value="5"/>
+              </div>
+              <div class="flex items-center justify-between">
+                <label class="text-xs text-slate-400">Консистенция</label>
+                <div class="flex gap-1" id="score-texture"></div>
+                <input type="hidden" id="org-texture" value="5"/>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="generateConclusion()" class="btn-primary w-full py-3 rounded-xl text-sm text-white font-semibold flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            Сформировать экспертное заключение
+          </button>
+        </div>
+
+        <!-- RESULT PANEL -->
+        <div class="xl:col-span-3" id="expert-result-panel">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-600 h-full flex flex-col items-center justify-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-sm">Заполните данные анализа и нажмите<br/>«Сформировать экспертное заключение»</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MODULE: HACCP ═══════ -->
+    <div id="module-haccp" class="module-panel p-6 animate-fade-in hidden">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-white mb-1">Анализ рисков ХАССП</h2>
+        <p class="text-slate-400 text-sm">Критические контрольные точки по группам продуктов — ТР ТС 021/2011, ГОСТ Р ИСО 22000-2019</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-1">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h3 class="text-sm font-semibold text-white mb-3">Выбор группы продуктов</h3>
+            <div class="space-y-2" id="haccp-group-buttons">
+              <!-- Filled dynamically -->
+            </div>
+          </div>
+        </div>
+        <div class="lg:col-span-3" id="haccp-ccp-panel">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-600">
+            <svg class="w-12 h-12 mx-auto mb-3 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p>Выберите группу продуктов для просмотра ККТ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 no-print"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+  <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 text-center">
+    <div class="w-12 h-12 border-3 border-lab-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-white font-medium" id="loading-text">Вычисление...</p>
+    <p class="text-slate-500 text-xs mt-1">Локальный движок • Без интернета</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBALS & STATE
+// ═══════════════════════════════════════════════════════════
+const API = 'http://127.0.0.1:3000/api';
+let charts = {};
+let labState = {
+  productGroup: null,
+  productId: null,
+  experimentType: null,
+  currentStep: 1,
+  totalSteps: 0,
+  collectedData: {},
+  product: null
+};
+let dbState = { groups: {}, products: {}, loaded: false };
+let searchTimer = null;
+
+// ═══════════════════════════════════════════════════════════
+//  UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+async function apiFetch(endpoint, options = {}) {
+  try {
+    const res = await fetch(API + endpoint, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || 'Ошибка запроса');
+    }
+    return await res.json();
+  } catch (err) {
+    showToast(err.message, 'error');
+    throw err;
+  }
+}
+
+function showToast(msg, type = 'info') {
+  const colors = {
+    info:    'bg-slate-800 border-slate-700 text-slate-200',
+    success: 'bg-lab-900   border-lab-700   text-lab-200',
+    error:   'bg-red-950   border-red-800   text-red-200',
+    warn:    'bg-yellow-950 border-yellow-800 text-yellow-200'
+  };
+  const icons = {
+    info: '💡', success: '✅', error: '❌', warn: '⚠️'
+  };
+  const toast = document.createElement('div');
+  toast.className = `flex items-start gap-3 px-4 py-3 rounded-xl border shadow-xl max-w-sm animate-slide-up ${colors[type]}`;
+  toast.innerHTML = `<span class="text-lg">${icons[type]}</span><p class="text-sm flex-1">${msg}</p>
+    <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-lg leading-none ml-2">×</button>`;
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+function showLoading(text = 'Вычисление...') {
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+function formatNumber(v, dec = 2) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return parseFloat(v).toFixed(dec);
+}
+
+function getRiskClass(level) {
+  if (!level) return '';
+  const l = level.toUpperCase();
+  if (l.includes('КРИТ')) return 'risk-critical';
+  if (l.includes('ВЫСОК')) return 'risk-high';
+  if (l.includes('СРЕДН')) return 'risk-medium';
+  return 'risk-low';
+}
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODULE NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showModule(id) {
+  document.querySelectorAll('.module-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('[id^="nav-"]').forEach(n => {
+    n.classList.remove('bg-slate-800', 'text-white', 'active');
+    n.classList.add('text-slate-300');
+  });
+  document.getElementById('module-' + id)?.classList.remove('hidden');
+  const nav = document.getElementById('nav-' + id);
+  if (nav) {
+    nav.classList.add('bg-slate-800', 'text-white', 'active');
+    nav.classList.remove('text-slate-300');
+  }
+  // Lazy load
+  if (id === 'library'   && !dbState.loaded) loadLibrary();
+  if (id === 'functional') loadFunctional();
+  if (id === 'haccp')      loadHACCPGroups();
+  if (id === 'expert')     initExpertSelects();
+  if (id === 'math')       initMathSelects();
+  if (id === 'lab')        initLabSelects();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SERVER STATUS CHECK
+// ═══════════════════════════════════════════════════════════
+async function checkServerStatus() {
+  try {
+    const data = await apiFetch('/health');
+    const dot  = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    dot.className  = 'w-2 h-2 rounded-full bg-lab-400';
+    text.textContent = 'Система работает';
+    text.className = 'text-xs text-lab-300';
+    loadDashboard(data);
+  } catch {
+    const dot  = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    dot.className  = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+    text.textContent = 'Нет соединения';
+    text.className = 'text-xs text-red-400';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════
+async function loadDashboard(healthData) {
+  try {
+    const stats = await apiFetch('/stats');
+    const s = stats.stats;
+    document.getElementById('stat-groups').textContent   = Object.keys(s.groups).length;
+    document.getElementById('stat-products').textContent = s.totalProducts;
+
+    const ff = await apiFetch('/functional-foods');
+    document.getElementById('stat-functional').textContent = ff.count;
+
+    // Build DB status table
+    const tbody = document.getElementById('db-status-table');
+    const groupIcons = {
+      meat: '🥩', dairy: '🥛', bread: '🍞', fish: '🐟',
+      fruits_vegetables: '🍎', beverages: '🧃', confectionery: '🍫', catering: '🍽️'
+    };
+    tbody.innerHTML = Object.entries(s.groups).map(([k, g]) => `
+      <tr class="border-b border-slate-800/50 highlight-row">
+        <td class="py-2 pr-4 text-slate-300">
+          <span class="mr-2">${groupIcons[k] || '📦'}</span>${g.name}
+        </td>
+        <td class="py-2 pr-4 text-center text-white font-medium">${g.count}</td>
+        <td class="py-2 text-center">
+          <span class="tag bg-lab-900/50 text-lab-300 border border-lab-800">Загружено</span>
+        </td>
+      </tr>
+    `).join('');
+
+    // Store groups for selects
+    dbState.groups = s.groups;
+    dbState.loaded = true;
+  } catch (e) {
+    console.error('Dashboard load error:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LIBRARY MODULE
+// ═══════════════════════════════════════════════════════════
+async function loadLibrary() {
+  try {
+    const data = await apiFetch('/products');
+    const groups = data.groups;
+
+    // Build tabs
+    const tabContainer = document.getElementById('group-tabs');
+    const groupIcons = {
+      meat: '🥩', dairy: '🥛', bread: '🍞', fish: '🐟',
+      fruits_vegetables: '🍎', beverages: '🧃', confectionery: '🍫', catering: '🍽️'
+    };
+    const colors = ['lab', 'cyan', 'purple', 'yellow', 'orange', 'pink', 'indigo', 'rose'];
+    let colorIdx = 0;
+
+    Object.entries(groups).forEach(([key, g]) => {
+      const c = colors[colorIdx++ % colors.length];
+      const btn = document.createElement('button');
+      btn.className = `px-3 py-1.5 rounded-lg text-xs font-medium bg-${c}-900/30 text-${c}-300 border border-${c}-800/50 hover:bg-${c}-900/50 transition-all`;
+      btn.textContent = `${groupIcons[key] || '📦'} ${g.groupName}`;
+      btn.onclick = () => loadGroup(key);
+      tabContainer.appendChild(btn);
+    });
+
+    // Load all products
+    loadGroup('all');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function loadGroup(groupKey) {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = `<div class="col-span-3 text-center py-8">
+    <div class="animate-spin w-6 h-6 border-2 border-lab-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+    <p class="text-slate-600 text-sm">Загрузка...</p>
+  </div>`;
+
+  try {
+    let allProducts = [];
+    if (groupKey === 'all') {
+      const groupsData = await apiFetch('/products');
+      for (const [gKey] of Object.entries(groupsData.groups)) {
+        const gData = await apiFetch(`/products/${gKey}`);
+        Object.entries(gData.group.items).forEach(([pKey, p]) => {
+          allProducts.push({ groupKey: gKey, productId: pKey, ...p });
+        });
+      }
+    } else {
+      const gData = await apiFetch(`/products/${groupKey}`);
+      Object.entries(gData.group.items).forEach(([pKey, p]) => {
+        allProducts.push({ groupKey: groupKey, productId: pKey, ...p });
+      });
+    }
+
+    if (allProducts.length === 0) {
+      grid.innerHTML = `<div class="col-span-3 text-center text-slate-600 py-12">Продукты не найдены</div>`;
+      return;
+    }
+
+    grid.innerHTML = allProducts.map(p => renderProductCard(p)).join('');
+  } catch (e) {
+    grid.innerHTML = `<div class="col-span-3 text-center text-red-500 py-8">Ошибка загрузки: ${e.message}</div>`;
+  }
+}
+
+function renderProductCard(product) {
+  const std = product.standards || {};
+  const pc  = product.physicochemical || {};
+  const links = (product.verifiedLinks || []).slice(0, 2);
+
+  const paramBadges = Object.entries(pc).slice(0, 4).map(([key, val]) => {
+    const names = { acidity: 'Кисл.', moisture: 'Влажн.', fat: 'Жир', protein: 'Белок', salt: 'Соль', kmafanm: 'КМАФАнМ', ph: 'pH' };
+    if (typeof val === 'object' && val !== null) {
+      const range = val.min !== undefined && val.max !== undefined
+        ? `${val.min}–${val.max} ${val.unit || ''}`
+        : val.max !== undefined ? `≤${val.max} ${val.unit || ''}` : `≥${val.min} ${val.unit || ''}`;
+      return `<span class="tag bg-slate-800 text-slate-400 border border-slate-700">${names[key] || key}: ${range}</span>`;
+    }
+    return '';
+  }).filter(Boolean).join('');
+
+  return `
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all cursor-pointer hover:shadow-lg"
+         onclick="openProductModal('${product.groupKey}', '${product.productId}')">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex-1 min-w-0">
+          <h4 class="text-sm font-semibold text-white truncate">${product.name}</h4>
+          <p class="text-xs text-lab-400 font-medium mt-0.5">${std.gost || 'ГОСТ не указан'}</p>
+        </div>
+        <svg class="w-4 h-4 text-slate-600 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+        </svg>
+      </div>
+
+      <p class="text-xs text-slate-500 mb-3">${std.tr_ts || ''}</p>
+
+      <div class="flex flex-wrap gap-1 mb-3">${paramBadges}</div>
+
+      ${links.length > 0 ? `
+        <div class="border-t border-slate-800 pt-3 flex flex-wrap gap-2">
+          ${links.map(l => `
+            <a href="${l.url}" target="_blank"
+               class="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+               onclick="event.stopPropagation()">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>${l.source}
+            </a>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+async function openProductModal(groupKey, productId) {
+  const modal   = document.getElementById('product-modal');
+  const content = document.getElementById('product-modal-content');
+  modal.classList.remove('hidden');
+  content.innerHTML = `<div class="p-8 text-center"><div class="animate-spin w-8 h-8 border-2 border-lab-600 border-t-transparent rounded-full mx-auto"></div></div>`;
+
+  try {
+    const data    = await apiFetch(`/products/${groupKey}/${productId}`);
+    const product = data.product;
+    const std     = product.standards || {};
+    const pc      = product.physicochemical || {};
+    const sc      = product.storageConditions || {};
+
+    const paramRows = Object.entries(pc).map(([key, val]) => {
+      const names = {
+        acidity: 'Кислотность', moisture: 'Влажность', fat: 'Массовая доля жира',
+        protein: 'Массовая доля белка', salt: 'Массовая доля соли', kmafanm: 'КМАФАнМ',
+        ph: 'pH', density: 'Плотность', starch: 'Крахмал', porosity: 'Пористость'
+      };
+      if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+        const min = val.min !== undefined ? val.min : '—';
+        const max = val.max !== undefined ? val.max : '—';
+        const unit = val.unit || '';
+        return `<tr class="border-b border-slate-800/50 highlight-row">
+          <td class="py-2 pr-4 text-xs text-slate-400">${names[key] || key}</td>
+          <td class="py-2 pr-4 text-xs text-slate-300 font-mono">${min === '—' ? '—' : `от ${min}`}</td>
+          <td class="py-2 pr-4 text-xs text-slate-300 font-mono">${max === '—' ? '—' : `до ${max}`}</td>
+          <td class="py-2 text-xs text-slate-500">${unit}</td>
+          ${val.note ? `<td class="py-2 text-xs text-yellow-600 italic">${val.note}</td>` : '<td></td>'}
+        </tr>`;
+      }
+      return '';
+    }).filter(Boolean).join('');
+
+    const linksList = (product.verifiedLinks || []).map(l => `
+      <a href="${l.url}" target="_blank"
+         class="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 transition-all group">
+        <div class="w-6 h-6 rounded bg-cyan-900/30 flex items-center justify-center group-hover:bg-cyan-900/50">
+          <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-cyan-300">${l.source}</p>
+          <p class="text-xs text-slate-500 truncate">${l.description}</p>
+        </div>
+      </a>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="p-5">
+        <div class="flex items-start justify-between mb-5">
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-bold text-white">${product.name}</h3>
+            <div class="flex gap-2 flex-wrap mt-2">
+              <span class="tag bg-lab-900/50 text-lab-300 border border-lab-800">${std.gost || 'ГОСТ —'}</span>
+              ${std.tr_ts ? `<span class="tag bg-cyan-900/30 text-cyan-300 border border-cyan-800">${std.tr_ts}</span>` : ''}
+            </div>
+          </div>
+          <button onclick="document.getElementById('product-modal').classList.add('hidden')"
+            class="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-white transition-colors ml-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        ${std.gostTitle ? `<p class="text-xs text-slate-500 italic mb-4">«${std.gostTitle}»</p>` : ''}
+
+        <div class="mb-5">
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Физико-химические показатели</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-4">Показатель</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-4">Мин.</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-4">Макс.</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-4">Ед. изм.</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5">Примечание</th>
+                </tr>
+              </thead>
+              <tbody>${paramRows || '<tr><td colspan="5" class="text-slate-600 py-3">Нет данных</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>
+
+        ${sc.maxTemp !== undefined ? `
+        <div class="mb-5">
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Условия хранения</h4>
+          <div class="grid grid-cols-3 gap-3">
+            ${sc.maxTemp !== undefined ? `<div class="bg-slate-800/50 rounded-lg p-3"><p class="text-xs text-slate-500">Температура</p><p class="text-sm font-medium text-white">${sc.minTemp !== undefined ? `${sc.minTemp}…` : '≤'}${sc.maxTemp}°C</p></div>` : ''}
+            ${sc.maxRH !== undefined ? `<div class="bg-slate-800/50 rounded-lg p-3"><p class="text-xs text-slate-500">ОВВ</p><p class="text-sm font-medium text-white">≤${sc.maxRH}%</p></div>` : ''}
+            ${sc.shelfLife_days !== undefined ? `<div class="bg-slate-800/50 rounded-lg p-3"><p class="text-xs text-slate-500">Срок годности</p><p class="text-sm font-medium text-white">${sc.shelfLife_days} сут.</p></div>` : ''}
+          </div>
+        </div>` : ''}
+
+        ${product.verifiedLinks?.length > 0 ? `
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Верифицированные источники</h4>
+          <div class="grid grid-cols-1 gap-2">${linksList}</div>
+        </div>` : ''}
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div class="p-8 text-center text-red-400">${e.message}</div>`;
+  }
+}
+
+function debounceSearch(query) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => performSearch(query), 400);
+}
+
+async function performSearch(query) {
+  if (!query.trim()) { clearSearch(); return; }
+  const grid = document.getElementById('product-grid');
+  const info = document.getElementById('search-results-info');
+  grid.innerHTML = `<div class="col-span-3 text-center py-6 text-slate-600 text-sm">Поиск...</div>`;
+
+  try {
+    const data = await apiFetch(`/gosts/search?query=${encodeURIComponent(query)}`);
+    info.textContent = `Найдено: ${data.resultsCount} результатов по запросу «${query}»`;
+    info.classList.remove('hidden');
+
+    if (data.resultsCount === 0) {
+      grid.innerHTML = `<div class="col-span-3 text-center py-8 text-slate-600">Ничего не найдено по запросу «${query}»</div>`;
+      return;
+    }
+    const products = data.results.map(r => ({
+      groupKey: r.group, productId: r.productId, name: r.name,
+      standards: { gost: r.gost, gostTitle: r.gostTitle, tr_ts: r.tr_ts },
+      physicochemical: {}, verifiedLinks: r.verifiedLinks || []
+    }));
+    grid.innerHTML = products.map(p => renderProductCard(p)).join('');
+  } catch (e) {
+    grid.innerHTML = `<div class="col-span-3 text-center py-8 text-red-500">Ошибка поиска</div>`;
+  }
+}
+
+function clearSearch() {
+  document.getElementById('gost-search').value = '';
+  document.getElementById('search-results-info').classList.add('hidden');
+  loadGroup('all');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FUNCTIONAL FOODS MODULE
+// ═══════════════════════════════════════════════════════════
+let allFunctional = [];
+
+async function loadFunctional() {
+  try {
+    const data = await apiFetch('/functional-foods');
+    allFunctional = data.items;
+
+    // Categories
+    const cats = [...new Set(data.items.map(i => i.category))];
+    const filterDiv = document.getElementById('functional-category-filters');
+    cats.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:border-purple-700 hover:text-purple-300 transition-all';
+      btn.textContent = c;
+      btn.onclick = () => filterFunctional(c);
+      filterDiv.appendChild(btn);
+    });
+
+    renderFunctional(allFunctional);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function filterFunctional(category) {
+  const items = category === 'all' ? allFunctional : allFunctional.filter(i => i.category === category);
+  renderFunctional(items);
+}
+
+function renderFunctional(items) {
+  const grid = document.getElementById('functional-grid');
+  if (!items.length) {
+    grid.innerHTML = '<div class="col-span-2 text-center text-slate-600 py-12">Нет данных</div>';
+    return;
+  }
+  grid.innerHTML = items.map(item => `
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-purple-800/50 transition-all cursor-pointer"
+         onclick="openFunctionalModal('${item.id}')">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex-1">
+          <span class="tag bg-purple-900/30 text-purple-300 border border-purple-800/50 mb-2">${item.category}</span>
+          <h4 class="text-sm font-semibold text-white leading-snug mt-2">${item.name}</h4>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">${item.healthClaim}</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-cyan-400">👥 ${item.targetGroup?.substring(0, 40)}...</span>
+        <span class="text-xs text-slate-600">${item.ingredientList?.length || 0} ингредиентов</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openFunctionalModal(id) {
+  const modal   = document.getElementById('functional-modal');
+  const content = document.getElementById('functional-modal-content');
+  modal.classList.remove('hidden');
+  content.innerHTML = `<div class="p-8 text-center"><div class="animate-spin w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full mx-auto"></div></div>`;
+
+  try {
+    const data = await apiFetch(`/functional-foods/${id}`);
+    const item = data.item;
+
+    const ingredientRows = (item.ingredientList || []).map(ing => `
+      <tr class="border-b border-slate-800/50 highlight-row">
+        <td class="py-2 pr-3 text-xs text-slate-300">${ing.ingredient}</td>
+        <td class="py-2 pr-3 text-xs text-white font-mono">${ing.amount_g_per_kg} г/кг</td>
+        <td class="py-2 pr-3 text-xs text-slate-500">${ing.role || '—'}</td>
+        <td class="py-2 text-xs text-purple-400">${(ing.bioactiveCompounds || []).join(', ') || '—'}</td>
+      </tr>
+    `).join('');
+
+    const techSteps = (item.technologySteps || []).map(s => `
+      <div class="flex gap-3 mb-3">
+        <div class="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">${s.step}</div>
+        <div>
+          <p class="text-sm font-medium text-white">${s.operation}</p>
+          <p class="text-xs text-slate-400 mt-1">${s.details}</p>
+        </div>
+      </div>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="p-5">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <span class="tag bg-purple-900/30 text-purple-300 border border-purple-800/50 mb-2">${item.category}</span>
+            <h3 class="text-base font-bold text-white mt-2">${item.name}</h3>
+          </div>
+          <button onclick="document.getElementById('functional-modal').classList.add('hidden')"
+            class="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-slate-800/50 rounded-lg p-3">
+            <p class="text-xs text-slate-500 mb-1">Целевая группа</p>
+            <p class="text-xs text-white">${item.targetGroup}</p>
+          </div>
+          <div class="bg-lab-900/20 border border-lab-800/30 rounded-lg p-3">
+            <p class="text-xs text-slate-500 mb-1">Функциональное действие</p>
+            <p class="text-xs text-lab-300">${item.healthClaim}</p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Рецептура</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Ингредиент</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Кол-во</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Роль</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5">БАВ</th>
+                </tr>
+              </thead>
+              <tbody>${ingredientRows}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Технологическая схема</h4>
+          ${techSteps}
+        </div>
+
+        ${Object.keys(item.expectedPhysicochemical || {}).length > 0 ? `
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Ожидаемые показатели качества</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+            ${Object.entries(item.expectedPhysicochemical).map(([k, v]) => `
+              <div class="bg-slate-800/50 rounded-lg p-2">
+                <p class="text-xs text-slate-500">${k}</p>
+                <p class="text-sm font-medium text-white">${v.value !== undefined ? `${v.value} ${v.unit || ''}` : v}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>` : ''}
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div class="p-8 text-center text-red-400">${e.message}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LAB SIMULATOR
+// ═══════════════════════════════════════════════════════════
+async function initLabSelects() {
+  const groupSel = document.getElementById('lab-group');
+  if (groupSel.options.length > 1) return;
+  try {
+    const data = await apiFetch('/products');
+    Object.entries(data.groups).forEach(([k, g]) => {
+      groupSel.appendChild(new Option(g.groupName, k));
+    });
+  } catch (e) {}
+}
+
+async function loadLabProducts() {
+  const group = document.getElementById('lab-group').value;
+  const productSel = document.getElementById('lab-product');
+  productSel.innerHTML = '<option value="">Загрузка...</option>';
+  productSel.disabled = true;
+  if (!group) return;
+  try {
+    const data = await apiFetch(`/products/${group}`);
+    productSel.innerHTML = '<option value="">— Выберите продукт —</option>';
+    Object.entries(data.group.items).forEach(([k, p]) => {
+      productSel.appendChild(new Option(p.name, k));
+    });
+    productSel.disabled = false;
+  } catch (e) {}
+}
+
+async function initLab() {
+  const group   = document.getElementById('lab-group').value;
+  const product = document.getElementById('lab-product').value;
+  const expType = document.getElementById('lab-experiment').value;
+
+  if (!group || !product) {
+    showToast('Выберите группу продуктов и продукт', 'warn');
+    return;
+  }
+
+  showLoading('Инициализация лабораторной работы...');
+  try {
+    const data = await apiFetch('/lab/init', {
+      method: 'POST',
+      body: JSON.stringify({ productGroup: group, productId: product, experimentType: expType })
+    });
+
+    labState = {
+      productGroup: group,
+      productId: product,
+      experimentType: expType,
+      currentStep: 1,
+      totalSteps: data.labWork.totalSteps,
+      collectedData: {},
+      product: data.sessionInfo,
+      labWork: data.labWork
+    };
+
+    renderLabSession(data);
+    document.getElementById('lab-progress-section').classList.remove('hidden');
+    document.getElementById('lab-setup').classList.add('opacity-50');
+    showToast(`Эксперимент «${data.labWork.experimentName}» запущен`, 'success');
+  } catch (e) {
+    showToast('Ошибка инициализации: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderLabSession(data) {
+  const lw = data.labWork;
+
+  // Header
+  document.getElementById('lab-info-header').innerHTML = `
+    <div class="flex items-start justify-between">
+      <div>
+        <h3 class="text-sm font-bold text-white">${lw.experimentName}</h3>
+        <p class="text-xs text-lab-400 mt-0.5">${lw.gostReference}</p>
+        <p class="text-xs text-slate-500 mt-1">Продукт: <span class="text-white">${data.sessionInfo.productName}</span></p>
+      </div>
+      <div class="text-right">
+        <div class="flex flex-wrap gap-1 justify-end mb-2">
+          ${lw.equipment.slice(0,4).map(e => `<span class="tag bg-slate-800 text-slate-400 border border-slate-700">${e}</span>`).join('')}
+        </div>
+        <button onclick="resetLab()" class="btn-secondary px-3 py-1.5 rounded-lg text-xs text-slate-400">Сбросить</button>
+      </div>
+    </div>`;
+
+  // Step navigator
+  const nav = document.getElementById('lab-step-nav');
+  nav.innerHTML = lw.steps.map((s, i) => {
+    const isActive = i + 1 === labState.currentStep;
+    const isDone   = i + 1 < labState.currentStep;
+    const circleClass = isDone ? 'bg-lab-600 text-white' : isActive ? 'bg-cyan-600 text-white ring-2 ring-cyan-400' : 'bg-slate-800 text-slate-500';
+    return `
+      <div class="flex flex-col items-center" style="min-width:80px">
+        <div class="w-7 h-7 rounded-full ${circleClass} flex items-center justify-center text-xs font-bold mb-1">
+          ${isDone ? '✓' : s.step}
+        </div>
+        <p class="text-xs text-center ${isActive ? 'text-cyan-300' : isDone ? 'text-lab-400' : 'text-slate-600'}">${s.name.split(' ')[0]}</p>
+      </div>
+      ${i < lw.steps.length - 1 ? `<div class="step-connector ${isDone ? '' : 'inactive'} mt-3.5 mx-1"></div>` : ''}`;
+  }).join('');
+
+  renderCurrentStep();
+}
+
+function renderCurrentStep() {
+  const step = labState.labWork.steps.find(s => s.step === labState.currentStep);
+  if (!step) return;
+
+  const panel = document.getElementById('lab-step-panel');
+  panel.innerHTML = `
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg bg-cyan-800 flex items-center justify-center text-sm font-bold text-white">
+        ${step.step}
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold text-white">${step.name}</h3>
+        <p class="text-xs text-slate-500">${step.description}</p>
+      </div>
+    </div>
+
+    <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-4">
+      <p class="text-xs text-slate-400 flex items-start gap-2">
+        <svg class="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        ${step.instruction}
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4" id="step-inputs-${step.step}">
+      ${(step.inputs || []).map(inp => renderInputField(inp)).join('')}
+    </div>
+
+    <div class="flex gap-3">
+      ${labState.currentStep > 1 ? `<button onclick="prevStep()" class="btn-secondary px-4 py-2 rounded-lg text-sm text-slate-300">← Назад</button>` : ''}
+      <button onclick="executeStep()" class="btn-primary px-5 py-2.5 rounded-lg text-sm text-white font-medium">
+        ${labState.currentStep < labState.totalSteps ? 'Следующий шаг →' : 'Завершить эксперимент'}
+      </button>
+    </div>`;
+}
+
+function renderInputField(inp) {
+  if (inp.type === 'select') {
+    return `<div>
+      <label class="block text-xs text-slate-400 mb-1">${inp.label}</label>
+      <select id="input-${inp.field}" class="input-lab w-full px-3 py-2 rounded-lg text-sm">
+        ${(inp.options || []).map(o => `<option value="${o}">${o}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+  if (inp.type === 'boolean') {
+    return `<div class="flex items-center gap-3">
+      <input type="checkbox" id="input-${inp.field}" class="w-4 h-4 accent-lab-500" checked/>
+      <label for="input-${inp.field}" class="text-xs text-slate-400">${inp.label}</label>
+    </div>`;
+  }
+  return `<div>
+    <label class="block text-xs text-slate-400 mb-1">${inp.label}</label
+<input type="${inp.type}" id="input-${inp.field}"
+      placeholder="${inp.min !== undefined ? 'Мин: ' + inp.min : ''}"
+      ${inp.min !== undefined ? `min="${inp.min}"` : ''}
+      ${inp.max !== undefined ? `max="${inp.max}"` : ''}
+      ${inp.step !== undefined ? `step="${inp.step}"` : ''}
+      ${inp.default !== undefined ? `value="${inp.default}"` : ''}
+      class="input-lab w-full px-3 py-2 rounded-lg text-sm"/>
+  </div>`;
+}
+
+async function executeStep() {
+  const step    = labState.labWork.steps.find(s => s.step === labState.currentStep);
+  const rawData = {};
+
+  (step.inputs || []).forEach(inp => {
+    const el = document.getElementById(`input-${inp.field}`);
+    if (!el) return;
+    if (inp.type === 'boolean') rawData[inp.field] = el.checked;
+    else rawData[inp.field] = el.value;
+  });
+
+  showLoading(`Выполнение шага ${labState.currentStep}...`);
+  try {
+    const data = await apiFetch('/lab/step', {
+      method: 'POST',
+      body: JSON.stringify({
+        experimentType: labState.experimentType,
+        step: labState.currentStep,
+        rawData
+      })
+    });
+
+    // Save collected data
+    Object.assign(labState.collectedData, rawData);
+
+    // Show step result
+    renderStepResult(data.stepResult);
+
+    // If last step — show final calculation form
+    if (data.stepResult.isLastStep) {
+      showFinalCalculationForm();
+    } else {
+      labState.currentStep++;
+      setTimeout(() => {
+        document.getElementById('lab-step-result').classList.add('hidden');
+        renderLabStepNav();
+        renderCurrentStep();
+      }, 2000);
+    }
+  } catch (e) {
+    showToast('Ошибка выполнения шага: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderStepResult(result) {
+  const panel = document.getElementById('lab-step-result');
+  panel.classList.remove('hidden');
+
+  const isOk    = result.validationStatus === 'OK';
+  const checks  = (result.specialChecks || []).map(c => `
+    <div class="flex items-center gap-2 p-2 rounded-lg ${c.acceptable ? 'bg-lab-900/20 border border-lab-800/40' : 'bg-red-900/20 border border-red-800/40'}">
+      <span class="text-sm">${c.acceptable ? '✅' : '❌'}</span>
+      <div>
+        <p class="text-xs font-medium text-white">${c.check}</p>
+        <p class="text-xs text-slate-400">${c.status}</p>
+        ${c.diff_g !== undefined ? `<p class="text-xs font-mono text-cyan-300">Δm = ${c.diff_g} г</p>` : ''}
+        ${c.maxDeviation_ml !== undefined ? `<p class="text-xs font-mono text-cyan-300">Δmax = ${c.maxDeviation_ml} мл, среднее = ${c.meanVolume_ml} мл</p>` : ''}
+      </div>
+    </div>`).join('');
+
+  const warnings = (result.warnings || []).map(w =>
+    `<p class="text-xs text-yellow-400 flex items-center gap-1"><span>⚠</span>${w}</p>`).join('');
+
+  const validationErrors = (result.validationResults || [])
+    .filter(r => r.status !== undefined)
+    .map(r => `<p class="text-xs ${r.status === 'missing' ? 'text-orange-400' : 'text-red-400'}">• ${r.message}</p>`).join('');
+
+  panel.innerHTML = `
+    <div class="flex items-center gap-2 mb-3">
+      <span class="${isOk ? 'status-pass' : 'status-warn'} tag text-xs px-2 py-1">
+        ${isOk ? '✓ Шаг принят' : '⚠ Проверьте данные'}
+      </span>
+      <span class="text-xs text-slate-500">${result.stepName}</span>
+    </div>
+    ${validationErrors ? `<div class="mb-2">${validationErrors}</div>` : ''}
+    ${warnings ? `<div class="mb-2 space-y-1">${warnings}</div>` : ''}
+    ${checks ? `<div class="space-y-2">${checks}</div>` : ''}
+    ${isOk && !result.isLastStep ? `<p class="text-xs text-lab-400 mt-2 animate-pulse">Переход к следующему шагу...</p>` : ''}`;
+}
+
+function renderLabStepNav() {
+  const nav = document.getElementById('lab-step-nav');
+  const lw  = labState.labWork;
+  nav.innerHTML = lw.steps.map((s, i) => {
+    const isActive = i + 1 === labState.currentStep;
+    const isDone   = i + 1 < labState.currentStep;
+    const cc = isDone ? 'bg-lab-600 text-white' : isActive ? 'bg-cyan-600 text-white ring-2 ring-cyan-400' : 'bg-slate-800 text-slate-500';
+    return `
+      <div class="flex flex-col items-center" style="min-width:80px">
+        <div class="w-7 h-7 rounded-full ${cc} flex items-center justify-center text-xs font-bold mb-1">
+          ${isDone ? '✓' : s.step}
+        </div>
+        <p class="text-xs text-center ${isActive ? 'text-cyan-300' : isDone ? 'text-lab-400' : 'text-slate-600'}">${s.name.split(' ')[0]}</p>
+      </div>
+      ${i < lw.steps.length - 1 ? `<div class="step-connector ${isDone ? '' : 'inactive'} mt-3.5 mx-1"></div>` : ''}`;
+  }).join('');
+}
+
+function showFinalCalculationForm() {
+  const finalSection = document.getElementById('lab-final-section');
+  finalSection.classList.remove('hidden');
+  finalSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const inputsDiv = document.getElementById('lab-final-inputs');
+  const expType   = labState.experimentType;
+  const collected = labState.collectedData;
+
+  const fieldSets = {
+    titration: [
+      { field: 'sampleMass',    label: 'Масса навески (г)',                     default: collected.sampleMass || '' },
+      { field: 'naohVolume',    label: 'Объём NaOH на титрование (мл)',          default: collected.parallel1_volume || '' },
+      { field: 'naohNormality', label: 'Нормальность NaOH (н.)',                 default: collected.naohNormality || '0.1' },
+      { field: 'coefficient',   label: 'Поправочный коэффициент K',              default: collected.coefficient || '1.0' },
+      { field: 'productType',   label: 'Тип продукта',                          type: 'select',
+        options: ['dairy','bread','meat','fish','fruit','confectionery'],
+        labels:  ['Молочные','Хлебобулочные','Мясные','Рыбные','Фрукты/Овощи','Кондитерские'] },
+      { field: 'dilutionFactor',label: 'Фактор разбавления (D)',                 default: '1' }
+    ],
+    drying: [
+      { field: 'massBefore',    label: 'Масса бюксы + проба ДО сушки (г)',      default: collected.massBefore || '' },
+      { field: 'massAfter',     label: 'Масса бюксы + проба ПОСЛЕ сушки (г)',   default: collected.massAfterRepeat || collected.massAfter || '' },
+      { field: 'massBuksa',     label: 'Масса пустой бюксы (г)',                default: collected.massBuksaEmpty || '' }
+    ],
+    extraction: [
+      { field: 'sampleMass',      label: 'Масса навески (г)',                   default: collected.sampleMass || '' },
+      { field: 'colbalFatMass',   label: 'Масса колбы с жиром (г)',             default: collected.colbalFatMass || '' },
+      { field: 'colbalEmptyMass', label: 'Масса пустой колбы (г)',              default: collected.colbalEmptyMass || '' }
+    ],
+    salt_determination: [
+      { field: 'sampleMass',     label: 'Масса навески (г)',                    default: collected.sampleMass || '' },
+      { field: 'agno3Volume',    label: 'Объём AgNO₃ на титрование (мл)',       default: collected.agno3Volume || '' },
+      { field: 'agno3Normality', label: 'Нормальность AgNO₃ (н.)',              default: collected.agno3Normality || '0.05' },
+      { field: 'coefficient',    label: 'Поправочный коэффициент K',            default: collected.coefficient || '1.0' },
+      { field: 'dilutionFactor', label: 'Фактор разбавления (V_total/V_aliq)', default: collected.dilutionFactor || '25' }
+    ]
+  };
+
+  const fields = fieldSets[expType] || [];
+  inputsDiv.innerHTML = fields.map(f => {
+    if (f.type === 'select') {
+      const opts = (f.options || []).map((o, i) => `<option value="${o}">${f.labels ? f.labels[i] : o}</option>`).join('');
+      return `<div>
+        <label class="block text-xs text-slate-400 mb-1">${f.label}</label>
+        <select id="final-${f.field}" class="input-lab w-full px-3 py-2 rounded-lg text-sm">${opts}</select>
+      </div>`;
+    }
+    return `<div>
+      <label class="block text-xs text-slate-400 mb-1">${f.label}</label>
+      <input type="number" id="final-${f.field}" value="${f.default || ''}"
+        step="any" class="input-lab w-full px-3 py-2 rounded-lg text-sm"
+        placeholder="${f.label}"/>
+    </div>`;
+  }).join('');
+}
+
+async function runFinalCalculation() {
+  const expType = labState.experimentType;
+  const payload = {
+    productGroup: labState.productGroup,
+    productId: labState.productId,
+    calculationType: expType
+  };
+
+  // Collect final form values
+  const fieldNames = {
+    titration:         ['sampleMass','naohVolume','naohNormality','coefficient','productType','dilutionFactor'],
+    drying:            ['massBefore','massAfter','massBuksa'],
+    extraction:        ['sampleMass','colbalFatMass','colbalEmptyMass'],
+    salt_determination:['sampleMass','agno3Volume','agno3Normality','coefficient','dilutionFactor']
+  };
+
+  (fieldNames[expType] || []).forEach(f => {
+    const el = document.getElementById(`final-${f}`);
+    if (el) payload[f] = el.tagName === 'SELECT' ? el.value : parseFloat(el.value) || el.value;
+  });
+
+  showLoading('Расчёт физико-химического показателя...');
+  try {
+    const data = await apiFetch('/lab/calculate', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    renderCalculationResult(data);
+    showToast('Расчёт выполнен успешно', 'success');
+  } catch (e) {
+    showToast('Ошибка расчёта: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderCalculationResult(data) {
+  const resultDiv = document.getElementById('lab-calculation-result');
+  resultDiv.classList.remove('hidden');
+
+  const calc    = data.calculationResult;
+  const ref     = data.referenceValues || {};
+  const paramKey = calc.parameter.toLowerCase().includes('кислотн') ? 'acidity'
+    : calc.parameter.toLowerCase().includes('влажн') ? 'moisture'
+    : calc.parameter.toLowerCase().includes('жир') ? 'fat'
+    : calc.parameter.toLowerCase().includes('соль') || calc.parameter.toLowerCase().includes('хлорид') ? 'salt'
+    : null;
+
+  let complianceBlock = '';
+  if (paramKey && ref[paramKey]) {
+    const r   = ref[paramKey];
+    const val = calc.result;
+    const min = r.min !== undefined ? r.min : null;
+    const max = r.max !== undefined ? r.max : null;
+    const ok  = (min === null || val >= min) && (max === null || val <= max);
+    const range = min !== null && max !== null ? `${min}–${max} ${r.unit || ''}`
+                : max !== null ? `≤ ${max} ${r.unit || ''}`
+                : min !== null ? `≥ ${min} ${r.unit || ''}` : '—';
+
+    complianceBlock = `
+      <div class="mt-4 p-4 rounded-xl ${ok ? 'status-pass' : 'status-fail'}">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${ok ? '✅' : '❌'}</span>
+          <div>
+            <p class="text-sm font-bold">${ok ? 'СООТВЕТСТВУЕТ НОРМАТИВУ' : 'НЕ СООТВЕТСТВУЕТ НОРМАТИВУ'}</p>
+            <p class="text-xs mt-0.5">Измерено: <strong>${val} ${calc.unit}</strong> | Норма по ${data.standards?.gost || 'ГОСТ'}: <strong>${range}</strong></p>
+            ${!ok ? `<p class="text-xs mt-1">Отклонение: ${Math.abs(max !== null && val > max ? ((val-max)/max*100) : min !== null && val < min ? ((min-val)/min*100) : 0).toFixed(1)}%</p>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const stepsHtml = (calc.calculationSteps || []).map((s, i) => `
+    <div class="flex gap-3 py-2 border-b border-slate-800/50 last:border-0">
+      <span class="w-5 h-5 rounded-full bg-slate-800 text-xs font-bold text-slate-400 flex items-center justify-center flex-shrink-0">${i+1}</span>
+      <p class="text-xs text-slate-300 font-mono">${s}</p>
+    </div>`).join('');
+
+  resultDiv.innerHTML = `
+    <div class="bg-gradient-to-br from-slate-900 to-slate-800 border border-lab-800/50 rounded-xl overflow-hidden">
+      <div class="bg-lab-900/30 border-b border-lab-800/40 px-5 py-3 flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-bold text-white">${calc.parameter}</h4>
+          <p class="text-xs text-lab-400">${data.productName} | ${data.standards?.gost || ''}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-3xl font-bold text-lab-300">${formatNumber(calc.result, 2)}</p>
+          <p class="text-xs text-slate-500">${calc.unit}</p>
+        </div>
+      </div>
+
+      <div class="p-5">
+        <div class="mb-4">
+          <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01"/>
+            </svg>
+            Пошаговый расчёт
+          </h5>
+          <div class="bg-slate-950/50 rounded-lg p-3 space-y-0">${stepsHtml}</div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          ${Object.entries(calc.variables || {}).map(([k, v]) => `
+            <div class="bg-slate-800/50 rounded-lg p-2">
+              <p class="text-xs text-slate-500 font-mono">${k}</p>
+              <p class="text-xs text-white font-mono font-medium">${typeof v === 'number' ? v.toFixed(4) : v}</p>
+            </div>`).join('')}
+        </div>
+
+        ${complianceBlock}
+      </div>
+    </div>`;
+}
+
+function prevStep() {
+  if (labState.currentStep > 1) {
+    labState.currentStep--;
+    document.getElementById('lab-step-result').classList.add('hidden');
+    renderLabStepNav();
+    renderCurrentStep();
+  }
+}
+
+function resetLab() {
+  labState = { productGroup: null, productId: null, experimentType: null, currentStep: 1, totalSteps: 0, collectedData: {}, product: null };
+  document.getElementById('lab-progress-section').classList.add('hidden');
+  document.getElementById('lab-final-section').classList.add('hidden');
+  document.getElementById('lab-calculation-result').classList.add('hidden');
+  document.getElementById('lab-step-result').classList.add('hidden');
+  document.getElementById('lab-setup').classList.remove('opacity-50');
+  showToast('Эксперимент сброшен', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MATH MODELING MODULE
+// ═══════════════════════════════════════════════════════════
+function switchMathModel(model) {
+  document.querySelectorAll('.math-model-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.math-tab').forEach(t => {
+    t.classList.remove('tab-active', 'text-white');
+    t.classList.add('text-slate-400');
+  });
+  document.getElementById(`math-${model}`)?.classList.remove('hidden');
+  const activeTab = document.querySelector(`.math-tab[data-model="${model}"]`);
+  if (activeTab) {
+    activeTab.classList.add('tab-active', 'text-white');
+    activeTab.classList.remove('text-slate-400');
+  }
+}
+
+async function initMathSelects() {
+  const slGroup = document.getElementById('sl-group');
+  if (slGroup.options.length > 1) return;
+  try {
+    const data = await apiFetch('/products');
+    Object.entries(data.groups).forEach(([k, g]) => {
+      slGroup.appendChild(new Option(g.groupName, k));
+    });
+  } catch (e) {}
+}
+
+async function loadSlProducts() {
+  const group = document.getElementById('sl-group').value;
+  const pSel  = document.getElementById('sl-product');
+  pSel.innerHTML = '<option value="">Загрузка...</option>';
+  pSel.disabled = true;
+  if (!group) return;
+  try {
+    const data = await apiFetch(`/products/${group}`);
+    pSel.innerHTML = '<option value="">— Выберите продукт —</option>';
+    Object.entries(data.group.items).forEach(([k, p]) => pSel.appendChild(new Option(p.name, k)));
+    pSel.disabled = false;
+  } catch (e) {}
+}
+
+// ── BARANYI ───────────────────────────────────────────────
+async function runBaranyi() {
+  const payload = {
+    N0:          parseFloat(document.getElementById('b-n0').value),
+    Nmax:        parseFloat(document.getElementById('b-nmax').value),
+    temperature: parseFloat(document.getElementById('b-temp').value),
+    maxTime:     parseFloat(document.getElementById('b-maxtime').value),
+    Tmin:        parseFloat(document.getElementById('b-tmin').value),
+    h0:          parseFloat(document.getElementById('b-h0').value),
+    timeStep:    1
+  };
+
+  showLoading('Расчёт кинетики роста по модели Баранья...');
+  try {
+    const data = await apiFetch('/math/microbiology/baranyi', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    renderBaranyiResult(data);
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderBaranyiResult(data) {
+  const params      = data.parameters || {};
+  const paramsDiv   = document.getElementById('baranyi-params');
+  const interpDiv   = document.getElementById('baranyi-interpretation');
+
+  paramsDiv.classList.remove('hidden');
+  paramsDiv.innerHTML = [
+    { label: 'μmax (ч⁻¹)',       value: formatNumber(params.muMax_per_hour, 5) },
+    { label: 'Лаг-фаза (ч)',      value: formatNumber(params.lagTime_hours, 1) },
+    { label: 'Время генерации (ч)', value: formatNumber(params.generationTime_hours, 2) },
+    { label: 'Порча через (сут)', value: data.timeToSpoilage_days !== null ? formatNumber(data.timeToSpoilage_days, 1) : 'Нет' }
+  ].map(p => `
+    <div class="bg-slate-800 rounded-lg p-3 text-center">
+      <p class="text-xs text-slate-500">${p.label}</p>
+      <p class="text-lg font-bold ${p.label.includes('Порча') ? (data.timeToSpoilage_days !== null && data.timeToSpoilage_days < 3 ? 'text-red-400' : 'text-lab-300') : 'text-cyan-300'}">${p.value}</p>
+    </div>`).join('');
+
+  interpDiv.classList.remove('hidden');
+  const riskColors = {
+    'КРИТИЧЕСКИЙ': 'risk-critical', 'ВЫСОКИЙ': 'risk-high',
+    'СРЕДНИЙ': 'risk-medium', 'НИЗКИЙ': 'risk-low'
+  };
+  const interp = data.interpretation || '';
+  const riskMatch = interp.match(/УРОВЕНЬ РИСКА: (\S+)/);
+  const riskLevel  = riskMatch ? riskMatch[1] : 'СРЕДНИЙ';
+  interpDiv.innerHTML = `
+    <div class="${riskColors[riskLevel] || 'risk-medium'} rounded-lg p-4">
+      <p class="text-xs font-semibold text-white mb-1">Интерпретация результата</p>
+      <p class="text-xs text-slate-300">${interp}</p>
+    </div>`;
+
+  // Draw chart
+  destroyChart('baranyi');
+  const points    = (data.dataPoints || []).filter((_, i) => i % 2 === 0);
+  const labels    = points.map(p => `${p.time_h}ч`);
+  const logValues = points.map(p => p.log10N);
+  const spoilageY = Array(labels.length).fill(7);
+
+  const ctx = document.getElementById('baranyi-chart').getContext('2d');
+  charts.baranyi = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'log₁₀ N(t) — КМАФАнМ',
+          data: logValues,
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Порог порчи (10⁷ КОЕ/г)',
+          data: spoilageY,
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)} log₁₀ КОЕ/г`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#475569', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1e293b' } },
+        y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: '#1e293b' },
+             title: { display: true, text: 'log₁₀ N (КОЕ/г)', color: '#64748b', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// ── WOOD ──────────────────────────────────────────────────
+async function runWood() {
+  const payload = {
+    N0:      parseFloat(document.getElementById('w-n0').value),
+    Nmax:    parseFloat(document.getElementById('w-nmax').value),
+    r:       parseFloat(document.getElementById('w-r').value),
+    maxTime: parseFloat(document.getElementById('w-maxtime').value),
+    timeStep: 1
+  };
+
+  showLoading('Расчёт логистической модели Вуда...');
+  try {
+    const data = await apiFetch('/math/microbiology/wood', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    renderWoodResult(data);
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderWoodResult(data) {
+  const params    = data.parameters || {};
+  const paramsDiv = document.getElementById('wood-params');
+  paramsDiv.classList.remove('hidden');
+  paramsDiv.innerHTML = [
+    { label: 'r (ч⁻¹)',          value: params.r_per_hour },
+    { label: 'Время генерации (ч)', value: formatNumber(params.generationTime_hours, 2) },
+    { label: 'Порча через (сут)',  value: data.timeToSpoilage_days !== null ? formatNumber(data.timeToSpoilage_days, 1) : 'Нет' }
+  ].map(p => `
+    <div class="bg-slate-800 rounded-lg p-3 text-center">
+      <p class="text-xs text-slate-500">${p.label}</p>
+      <p class="text-base font-bold text-orange-300">${p.value}</p>
+    </div>`).join('');
+
+  destroyChart('wood');
+  const pts    = (data.dataPoints || []).filter((_, i) => i % 2 === 0);
+  const ctx    = document.getElementById('wood-chart').getContext('2d');
+  charts.wood  = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: pts.map(p => `${p.time_h}ч`),
+      datasets: [
+        {
+          label: 'log₁₀ N(t) [Вуд]',
+          data: pts.map(p => p.log10N),
+          borderColor: '#fb923c',
+          backgroundColor: 'rgba(251,146,60,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Порог порчи (10⁷)',
+          data: Array(pts.length).fill(7),
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#475569', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1e293b' } },
+        y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: '#1e293b' },
+             title: { display: true, text: 'log₁₀ N (КОЕ/г)', color: '#64748b', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// ── FICK ──────────────────────────────────────────────────
+async function runFick() {
+  const payload = {
+    M0:              parseFloat(document.getElementById('f-m0').value),
+    Meq:             parseFloat(document.getElementById('f-meq').value),
+    diffusionCoeff:  parseFloat(document.getElementById('f-d').value),
+    thickness:       parseFloat(document.getElementById('f-thickness').value),
+    maxTime:         parseFloat(document.getElementById('f-maxtime').value),
+    timeStep: 1
+  };
+
+  showLoading('Расчёт диффузии влаги по закону Фика...');
+  try {
+    const data = await apiFetch('/math/moisture/fick', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    renderFickResult(data);
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderFickResult(data) {
+  const params    = data.parameters || {};
+  const paramsDiv = document.getElementById('fick-params');
+  paramsDiv.classList.remove('hidden');
+  paramsDiv.innerHTML = [
+    { label: 'M₀ (%)',         value: params.M0_percent },
+    { label: 'Meq (%)',        value: params.Meq_percent },
+    { label: 'τ характ. (ч)', value: formatNumber(data.characteristicDiffusionTime_hours, 1) },
+    { label: 'Равновесие (ч)', value: data.timeToEquilibrium_hours !== null ? formatNumber(data.timeToEquilibrium_hours, 1) : 'Нет' },
+    { label: 'D (м²/с)',       value: params.D_m2_per_s?.toExponential(3) },
+    { label: 'L (м)',          value: params.halfThickness_m }
+  ].map(p => `
+    <div class="bg-slate-800 rounded-lg p-2 text-center">
+      <p class="text-xs text-slate-500">${p.label}</p>
+      <p class="text-sm font-bold text-blue-300">${p.value}</p>
+    </div>`).join('');
+
+  const interpDiv = document.getElementById('fick-interpretation');
+  interpDiv.classList.remove('hidden');
+  interpDiv.innerHTML = `
+    <div class="bg-slate-800/50 border border-blue-900/30 rounded-lg p-4">
+      <p class="text-xs font-semibold text-blue-300 mb-1">Интерпретация</p>
+      <p class="text-xs text-slate-300">${data.interpretation}</p>
+    </div>`;
+
+  destroyChart('fick');
+  const pts  = (data.dataPoints || []).filter((_, i) => i % 1 === 0);
+  const ctx  = document.getElementById('fick-chart').getContext('2d');
+  charts.fick = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: pts.map(p => `${p.time_h}ч`),
+      datasets: [
+        {
+          label: 'Влажность M(t) (%)',
+          data: pts.map(p => p.moisture_percent),
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56,189,248,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: `Равновесная Meq (${params.Meq_percent}%)`,
+          data: Array(pts.length).fill(params.Meq_percent),
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#475569', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1e293b' } },
+        y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: '#1e293b' },
+             title: { display: true, text: 'Влажность (%)', color: '#64748b', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// ── SHELF LIFE ────────────────────────────────────────────
+async function runShelfLife() {
+  const group   = document.getElementById('sl-group').value;
+  const product = document.getElementById('sl-product').value;
+  if (!group || !product) { showToast('Выберите продукт', 'warn'); return; }
+
+  const payload = {
+    productGroup:        group,
+    productId:           product,
+    storageTemp:         parseFloat(document.getElementById('sl-temp').value),
+    initialMicrobialLoad:parseFloat(document.getElementById('sl-n0').value),
+    storageRH:           parseFloat(document.getElementById('sl-rh').value),
+    packaging:           document.getElementById('sl-packaging').value
+  };
+
+  showLoading('Прогнозирование срока годности...');
+  try {
+    const data = await apiFetch('/math/shelf-life', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    renderShelfLifeResult(data);
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderShelfLifeResult(data) {
+  const panel = document.getElementById('shelf-life-result');
+  const r     = data.shelfLifeResult;
+  const sl    = r.estimatedShelfLife_days;
+
+  const riskColor = sl === null ? 'border-slate-700' : sl < 3 ? 'border-red-700' : sl < 7 ? 'border-yellow-700' : 'border-lab-700';
+  const riskBg    = sl === null ? '' : sl < 3 ? 'bg-red-950/30' : sl < 7 ? 'bg-yellow-950/30' : 'bg-lab-950/30';
+
+  const recs = (r.recommendations || []).map(rec => `
+    <li class="flex items-start gap-2 text-xs text-slate-300">
+      <span class="text-lab-400 mt-0.5">→</span>${rec}
+    </li>`).join('');
+
+  panel.innerHTML = `
+    <div class="space-y-4">
+      <!-- MAIN RESULT -->
+      <div class="bg-slate-900 border-2 ${riskColor} ${riskBg} rounded-xl p-6 text-center">
+        <p class="text-xs text-slate-500 mb-2">Расчётный срок годности</p>
+        <p class="text-6xl font-black ${sl === null ? 'text-slate-600' : sl < 3 ? 'text-red-400' : sl < 7 ? 'text-yellow-400' : 'text-lab-300'}">
+          ${sl !== null ? sl : '∞'}
+        </p>
+        <p class="text-sm text-slate-400 mt-1">суток при T = ${r.storageConditions.temperature_C}°C</p>
+        ${r.limitingFactor ? `<p class="text-xs text-slate-500 mt-2">Лимитирующий фактор: <span class="text-yellow-400">${r.limitingFactor}</span></p>` : ''}
+        <p class="text-xs text-slate-600 mt-1">Коэффициент упаковки: ×${r.packagingFactor}</p>
+      </div>
+
+      <!-- PARAMETERS -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-center">
+          <p class="text-xs text-slate-500">T хранения</p>
+          <p class="text-lg font-bold text-white">${r.storageConditions.temperature_C}°C</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-center">
+          <p class="text-xs text-slate-500">ОВВ</p>
+          <p class="text-lg font-bold text-white">${r.storageConditions.relativeHumidity_percent}%</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-center">
+          <p class="text-xs text-slate-500">Упаковка</p>
+          <p class="text-sm font-bold text-white">${r.storageConditions.packaging}</p>
+        </div>
+      </div>
+
+      <!-- MICROBIAL DETAILS -->
+      ${r.microbialKinetics && r.microbialKinetics.parameters ? `
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Микробиологическая кинетика</h4>
+        <div class="grid grid-cols-2 gap-2">
+          ${[
+            { l: 'μmax (ч⁻¹)', v: formatNumber(r.microbialKinetics.parameters.muMax_per_hour, 5) },
+            { l: 'Лаг-фаза (ч)', v: formatNumber(r.microbialKinetics.parameters.lagTime_hours, 1) },
+            { l: 'Время генерации (ч)', v: formatNumber(r.microbialKinetics.parameters.generationTime_hours, 2) },
+            { l: 'Порча (ч)', v: r.microbialKinetics.timeToSpoilage_hours !== null ? formatNumber(r.microbialKinetics.timeToSpoilage_hours, 1) : 'Нет' }
+          ].map(p => `<div class="bg-slate-800/50 rounded-lg p-2"><p class="text-xs text-slate-500">${p.l}</p><p class="text-sm font-medium text-cyan-300">${p.v}</p></div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- RECOMMENDATIONS -->
+      ${recs ? `
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Технологические рекомендации</h4>
+        <ul class="space-y-2">${recs}</ul>
+      </div>` : ''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPERT CONCLUSION MODULE
+// ═══════════════════════════════════════════════════════════
+async function initExpertSelects() {
+  const grpSel = document.getElementById('exp-group');
+  if (grpSel.options.length > 1) return;
+  try {
+    const data = await apiFetch('/products');
+    Object.entries(data.groups).forEach(([k, g]) => {
+      grpSel.appendChild(new Option(g.groupName, k));
+    });
+  } catch (e) {}
+  initScoreWidgets();
+}
+
+async function loadExpProducts() {
+  const group = document.getElementById('exp-group').value;
+  const pSel  = document.getElementById('exp-product');
+  pSel.innerHTML = '<option value="">Загрузка...</option>';
+  pSel.disabled = true;
+  if (!group) return;
+  try {
+    const data = await apiFetch(`/products/${group}`);
+    pSel.innerHTML = '<option value="">— Выберите продукт —</option>';
+    Object.entries(data.group.items).forEach(([k, p]) => pSel.appendChild(new Option(p.name, k)));
+    pSel.disabled = false;
+  } catch (e) {}
+}
+
+function initScoreWidgets() {
+  ['appearance', 'smell', 'taste', 'texture'].forEach(param => {
+    const container = document.getElementById(`score-${param}`);
+    if (!container || container.children.length > 0) return;
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'w-6 h-6 rounded text-sm transition-all hover:scale-110 text-yellow-400';
+      btn.textContent = '★';
+      btn.dataset.score = i;
+      btn.onclick = () => setScore(param, i);
+      container.appendChild(btn);
+    }
+    setScore(param, 5);
+  });
+}
+
+function setScore(param, score) {
+  document.getElementById(`org-${param}`).value = score;
+  const container = document.getElementById(`score-${param}`);
+  Array.from(container.children).forEach((btn, i) => {
+    btn.style.opacity = i < score ? '1' : '0.3';
+  });
+}
+
+async function generateConclusion() {
+  const group   = document.getElementById('exp-group').value;
+  const product = document.getElementById('exp-product').value;
+  if (!group || !product) { showToast('Выберите продукт', 'warn'); return; }
+
+  const getVal = id => {
+    const el  = document.getElementById(id);
+    const raw = el?.value?.trim();
+    return raw !== '' && raw !== undefined ? parseFloat(raw) : undefined;
+  };
+
+  const measuredValues = {};
+  const acidity  = getVal('mv-acidity');  if (acidity  !== undefined) measuredValues.acidity  = acidity;
+  const moisture = getVal('mv-moisture'); if (moisture !== undefined) measuredValues.moisture = moisture;
+  const fat      = getVal('mv-fat');      if (fat      !== undefined) measuredValues.fatContent = fat;
+  const protein  = getVal('mv-protein');  if (protein  !== undefined) measuredValues.proteinContent = protein;
+  const salt     = getVal('mv-salt');     if (salt     !== undefined) measuredValues.saltContent = salt;
+  const kmafanm  = getVal('mv-kmafanm'); if (kmafanm  !== undefined) measuredValues.kmafanm = kmafanm;
+
+  measuredValues.organoleptic = {
+    appearance: parseInt(document.getElementById('org-appearance').value),
+    smell:      parseInt(document.getElementById('org-smell').value),
+    taste:      parseInt(document.getElementById('org-taste').value),
+    texture:    parseInt(document.getElementById('org-texture').value)
+  };
+
+  if (Object.keys(measuredValues).length <= 1) {
+    showToast('Введите хотя бы один физико-химический показатель', 'warn');
+    return;
+  }
+
+  showLoading('Формирование экспертного заключения...');
+  try {
+    const data = await apiFetch('/expert/conclusion', {
+      method: 'POST',
+      body: JSON.stringify({
+        productGroup:   group,
+        productId:      product,
+        measuredValues,
+        sampleInfo: {
+          batchNumber:  document.getElementById('exp-batch').value,
+          manufacturer: document.getElementById('exp-manufacturer').value,
+          samplingDate: new Date().toLocaleDateString('ru-RU')
+        }
+      })
+    });
+    renderExpertConclusion(data);
+    showToast('Экспертное заключение сформировано', 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderExpertConclusion(data) {
+  const panel   = document.getElementById('expert-result-panel');
+  const conc    = data.conclusion;
+  const isPass  = conc.finalVerdict.statusCode === 'PASS';
+  const sample  = conc.sampleInformation;
+  const regBasis = conc.regulatoryBasis;
+
+  // Parameter checks table
+  const paramRows = Object.entries(conc.physicalChemicalAnalysis || {}).map(([key, check]) => {
+    if (check.status === 'NOT_MEASURED') return '';
+    const isOk    = check.status === 'COMPLIANT';
+    const badge   = isOk ? `<span class="tag status-pass">✓ Норма</span>` : `<span class="tag status-fail">✗ Нарушение</span>`;
+    const refRange = check.referenceMin !== null || check.referenceMax !== null
+      ? (check.referenceMin !== null && check.referenceMax !== null ? `${check.referenceMin}–${check.referenceMax}` : check.referenceMax !== null ? `≤${check.referenceMax}` : `≥${check.referenceMin}`)
+      : '—';
+    return `
+      <tr class="border-b border-slate-800/50 highlight-row">
+        <td class="py-2 pr-3 text-xs text-slate-400">${check.paramNameRu || key}</td>
+        <td class="py-2 pr-3 text-xs text-white font-mono font-medium">${formatNumber(check.measuredValue, 2)}</td>
+        <td class="py-2 pr-3 text-xs text-slate-500 font-mono">${refRange}</td>
+        <td class="py-2 pr-3 text-xs">${badge}</td>
+        <td class="py-2 text-xs ${isOk ? 'text-slate-600' : 'text-red-400'}">${isOk ? '' : `+${check.deviation}%`}</td>
+      </tr>`;
+  }).filter(Boolean).join('');
+
+  // Organoleptics
+  const org = conc.organolepticsAnalysis;
+  const orgBlock = org ? `
+    <div class="bg-slate-800/50 rounded-lg p-4 mb-4">
+      <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Органолептические показатели</h5>
+      <div class="grid grid-cols-4 gap-3 mb-3">
+        ${[
+          { l: 'Внешний вид', v: org.appearance },
+          { l: 'Запах',       v: org.smell },
+          { l: 'Вкус',        v: org.taste },
+          { l: 'Консистенция',v: org.texture }
+        ].map(p => `
+          <div class="text-center">
+            <div class="flex justify-center gap-0.5 mb-1">${'★'.repeat(p.v || 0)}<span class="text-slate-700">${'★'.repeat(5 - (p.v || 0))}</span></div>
+            <p class="text-xs text-slate-500">${p.l}</p>
+            <p class="text-sm font-bold text-yellow-400">${p.v}/5</p>
+          </div>`).join('')}
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-slate-500">Средний балл: <strong class="text-white">${org.averageScore}/5</strong> — <strong class="${org.isCompliant ? 'text-lab-400' : 'text-red-400'}">${org.verdict}</strong></span>
+        <span class="tag ${org.isCompliant ? 'status-pass' : 'status-fail'}">${org.isCompliant ? '✓ Принято' : '✗ Отклонено'}</span>
+      </div>
+    </div>` : '';
+
+  // Violations
+  const violationBlocks = (conc.violations || []).map(v => {
+    const di  = v.defectInfo || {};
+    const rc  = getRiskClass(di.riskLevel || 'СРЕДНИЙ');
+    return `
+      <div class="${rc} rounded-lg p-4 mb-3">
+        <div class="flex items-start gap-3 mb-3">
+          <span class="text-xl">⚠️</span>
+          <div>
+            <p class="text-sm font-bold text-white">${di.defectName || v.paramNameRu}</p>
+            <p class="text-xs text-slate-400 mt-0.5">${v.complianceText || ''}</p>
+          </div>
+          <span class="ml-auto tag ${v.status === 'NON_COMPLIANT_HIGH' ? 'bg-red-900/50 text-red-300 border-red-800' : 'bg-orange-900/50 text-orange-300 border-orange-800'} text-xs border">
+            ${v.status === 'NON_COMPLIANT_HIGH' ? '↑ Превышение' : '↓ Недостаток'}
+          </span>
+        </div>
+        ${di.possibleCauses?.length ? `
+          <div class="mb-2">
+            <p class="text-xs font-semibold text-slate-400 mb-1">Возможные причины:</p>
+            <ul class="space-y-0.5">${di.possibleCauses.map(c => `<li class="text-xs text-slate-400">• ${c}</li>`).join('')}</ul>
+          </div>` : ''}
+        ${di.recommendations?.length ? `
+          <div class="mb-2">
+            <p class="text-xs font-semibold text-lab-400 mb-1">Рекомендации технологу:</p>
+            <ul class="space-y-0.5">${di.recommendations.map(r => `<li class="text-xs text-lab-300">→ ${r}</li>`).join('')}</ul>
+          </div>` : ''}
+        <div class="flex flex-wrap gap-2 mt-2">
+          ${di.haccpCcp ? `<span class="tag bg-red-900/30 text-red-300 border border-red-800/50">ХАССП: ${di.haccpCcp}</span>` : ''}
+          ${di.riskLevel ? `<span class="tag bg-orange-900/30 text-orange-300 border border-orange-800/50">Риск: ${di.riskLevel}</span>` : ''}
+          ${di.disposition ? `<span class="tag bg-slate-800 text-slate-400 border border-slate-700">Решение: ${di.disposition.substring(0, 60)}...</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  // HACCP block
+  const haccp     = conc.haccpRiskAnalysis;
+  const haccpBlock = haccp ? `
+    <div class="border border-rose-900/50 bg-rose-950/20 rounded-xl p-4 mb-4">
+      <h5 class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        Анализ рисков ХАССП
+      </h5>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="${getRiskClass(haccp.overallRiskLevel)} rounded-lg p-3 flex-1 text-center">
+          <p class="text-xs text-slate-500">Общий уровень риска</p>
+          <p class="text-base font-bold text-white">${haccp.overallRiskLevel}</p>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+          <p class="text-xs text-slate-500">Нарушений</p>
+          <p class="text-lg font-bold text-red-400">${haccp.violationsAnalyzed}</p>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+          <p class="text-xs text-slate-500">Рекоменд. аудит</p>
+          <p class="text-xs font-medium text-yellow-400">${haccp.nextAuditRecommended?.description || '—'}</p>
+        </div>
+      </div>
+      ${haccp.affectedCriticalControlPoints?.length ? `
+        <div class="mb-3">
+          <p class="text-xs font-semibold text-slate-400 mb-2">Задействованные ККТ:</p>
+          ${haccp.affectedCriticalControlPoints.map(ccp => `
+            <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-2">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="tag bg-rose-900/30 text-rose-300 border border-rose-800/50">${ccp.number}</span>
+                <span class="text-xs font-medium text-white">${ccp.processStep}</span>
+              </div>
+              <p class="text-xs text-slate-400 mb-1"><strong>Опасность:</strong> ${ccp.hazard}</p>
+              <p class="text-xs text-slate-400 mb-1"><strong>КП:</strong> ${ccp.criticalLimit}</p>
+              ${ccp.correctiveActions?.length ? `<p class="text-xs text-lab-400 mt-1">Корр. действие: ${ccp.correctiveActions[0]}</p>` : ''}
+            </div>`).join('')}
+        </div>` : ''}
+      ${haccp.consolidatedRecommendations?.length ? `
+        <div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Превентивные меры:</p>
+          <ul class="space-y-1">${haccp.consolidatedRecommendations.slice(0, 5).map(r => `
+            <li class="text-xs text-slate-300 flex items-start gap-1"><span class="text-rose-400 mt-0.5">→</span>${r}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+    </div>` : '';
+
+  // Print button
+  const printBtn = `
+    <button onclick="window.print()" class="btn-secondary w-full py-2 rounded-lg text-xs text-slate-400 flex items-center justify-center gap-2 mt-4">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+      </svg>
+      Распечатать заключение
+    </button>`;
+
+  panel.innerHTML = `
+    <div class="bg-slate-900 border ${isPass ? 'border-lab-700' : 'border-red-800'} rounded-xl overflow-hidden animate-slide-up">
+
+      <!-- VERDICT HEADER -->
+      <div class="${isPass ? 'bg-lab-900/40 border-b border-lab-800/50' : 'bg-red-950/50 border-b border-red-800/50'} px-5 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">${isPass ? '✅' : '❌'}</span>
+            <div>
+              <p class="text-sm font-bold text-white">${conc.finalVerdict.status}</p>
+              <p class="text-xs ${isPass ? 'text-lab-400' : 'text-red-400'} mt-0.5">
+                ${isPass ? 'Допускается к реализации' : `${conc.totalViolationsCount} нарушений выявлено`}
+              </p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-slate-500">№ заключения</p>
+            <p class="text-xs font-mono text-slate-300">${conc.conclusionNumber}</p>
+            <p class="text-xs text-slate-600">${conc.sampleInformation.analysisDate}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-5 space-y-4">
+
+        <!-- SAMPLE INFO -->
+        <div class="grid grid-cols-2 gap-3">
+          ${[
+            { l: 'Наименование', v: sample.productName },
+            { l: 'Партия', v: sample.batchNumber },
+            { l: 'Производитель', v: sample.manufacturer },
+            { l: 'Дата анализа', v: sample.analysisDate },
+            { l: 'ГОСТ', v: regBasis.gost },
+            { l: 'ТР ТС', v: regBasis.tr_ts }
+          ].map(p => `
+            <div class="bg-slate-800/50 rounded-lg p-2">
+              <p class="text-xs text-slate-500">${p.l}</p>
+              <p class="text-xs text-white font-medium">${p.v || '—'}</p>
+            </div>`).join('')}
+        </div>
+
+        <!-- PARAMETERS TABLE -->
+        ${paramRows ? `
+        <div>
+          <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Физико-химические показатели</h5>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Показатель</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Факт</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Норма ГОСТ</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5 pr-3">Статус</th>
+                  <th class="text-left text-xs text-slate-600 py-1.5">Откл.</th>
+                </tr>
+              </thead>
+              <tbody>${paramRows}</tbody>
+            </table>
+          </div>
+        </div>` : ''}
+
+        ${orgBlock}
+
+        ${violationBlocks ? `
+        <div>
+          <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Выявленные несоответствия и рекомендации</h5>
+          ${violationBlocks}
+        </div>` : ''}
+
+        ${haccpBlock}
+
+        <!-- FINAL VERDICT -->
+        <div class="${isPass ? 'status-pass' : 'status-fail'} rounded-xl p-4">
+          <p class="text-sm font-bold text-white mb-1">ЗАКЛЮЧЕНИЕ:</p>
+          <p class="text-xs leading-relaxed">${conc.finalVerdict.recommendation}</p>
+        </div>
+
+        <!-- SIGNATURE -->
+        <div class="border-t border-slate-800 pt-4">
+          <p class="text-xs text-slate-600">${conc.expertSignature.system}</p>
+          <p class="text-xs text-slate-700">${conc.expertSignature.mode}</p>
+        </div>
+
+        ${printBtn}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HACCP MODULE
+// ═══════════════════════════════════════════════════════════
+async function loadHACCPGroups() {
+  const container = document.getElementById('haccp-group-buttons');
+  if (container.children.length > 0) return;
+
+  const groups = [
+    { key: 'meat',             label: '🥩 Мясные продукты' },
+    { key: 'dairy',            label: '🥛 Молочные продукты' },
+    { key: 'bread',            label: '🍞 Хлебобулочные' },
+    { key: 'fish',             label: '🐟 Рыбные продукты' },
+    { key: 'beverages',        label: '🧃 Напитки' },
+    { key: 'fruits_vegetables',label: '🍎 Плодоовощные' }
+  ];
+
+  groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 hover:text-white text-left transition-all border border-transparent hover:border-slate-700';
+    btn.textContent = g.label;
+    btn.onclick = () => loadHACCPCCPs(g.key, g.label, btn);
+    container.appendChild(btn);
+  });
+}
+
+async function loadHACCPCCPs(groupKey, groupLabel, btn) {
+  // Update active button style
+  document.querySelectorAll('#haccp-group-buttons button').forEach(b => {
+    b.classList.remove('bg-slate-800', 'text-white', 'border-slate-700');
+    b.classList.add('text-slate-300');
+  });
+  btn.classList.add('bg-slate-800', 'text-white', 'border-slate-700');
+  btn.classList.remove('text-slate-300');
+
+  const panel = document.getElementById('haccp-ccp-panel');
+  panel.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center">
+    <div class="animate-spin w-6 h-6 border-2 border-rose-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+    <p class="text-slate-600 text-sm">Загрузка ККТ...</p>
+  </div>`;
+
+  try {
+    const data = await apiFetch(`/expert/haccp-ccp/${groupKey}`);
+    renderHACCPPanel(data, groupLabel);
+  } catch (e) {
+    panel.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-red-500">${e.message}</div>`;
+  }
+}
+
+function renderHACCPPanel(data, groupLabel) {
+  const panel = document.getElementById('haccp-ccp-panel');
+  const ccps  = data.criticalControlPoints?.ccps || [];
+
+  if (!ccps.length) {
+    panel.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-600">
+      <p>ККТ для данной группы не найдены в базе.</p>
+      <p class="text-xs mt-2">Применяются общие требования ТР ТС 021/2011.</p>
+    </div>`;
+    return;
+  }
+
+  const riskColors = ['border-l-red-600', 'border-l-orange-600', 'border-l-yellow-600', 'border-l-blue-600'];
+
+  panel.innerHTML = `
+    <div class="space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">${data.criticalControlPoints?.groupName || groupLabel}</h3>
+          <p class="text-xs text-slate-500 mt-0.5">${data.criticalControlPoints?.regulatoryBasis || 'ТР ТС 021/2011'}</p>
+        </div>
+        <span class="tag bg-rose-900/30 text-rose-300 border border-rose-800/50">${ccps.length} ККТ</span>
+      </div>
+
+      ${ccps.map((ccp, idx) => `
+        <div class="bg-slate-900 border border-slate-800 border-l-4 ${riskColors[idx % riskColors.length]} rounded-xl p-5">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <span class="tag bg-rose-900/30 text-rose-300 border border-rose-800/50 mb-2">${ccp.number}</span>
+              <h4 class="text-sm font-bold text-white mt-1">${ccp.processStep}</h4>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-slate-800/50 rounded-lg p-3">
+              <p class="text-xs font-semibold text-red-400 mb-1">⚠ Идентифицированная опасность</p>
+              <p class="text-xs text-slate-300">${ccp.hazard}</p>
+            </div>
+            <div class="bg-slate-800/50 rounded-lg p-3">
+              <p class="text-xs font-semibold text-yellow-400 mb-1">📊 Параметр мониторинга</p>
+              <p class="text-xs text-slate-300">${ccp.monitoringParam}</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/30 border border-slate-700 rounded-lg p-3 mb-4">
+            <p class="text-xs font-semibold text-cyan-400 mb-1">🎯 Критический предел</p>
+            <p class="text-xs text-white font-medium">${ccp.criticalLimit}</p>
+          </div>
+
+          ${ccp.correctiveActions?.length ? `
+          <div class="mb-3">
+            <p class="text-xs font-semibold text-lab-400 mb-2">✅ Корректирующие действия</p>
+            <ul class="space-y-1">
+              ${ccp.correctiveActions.map(a => `<li class="text-xs text-slate-300 flex items-start gap-2">
+                <span class="text-lab-500 mt-0.5 flex-shrink-0">→</span>${a}
+              </li>`).join('')}
+            </ul>
+          </div>` : ''}
+
+          ${ccp.verificationProcedure ? `
+          <div class="border-t border-slate-800 pt-3">
+            <p class="text-xs font-semibold text-slate-500 mb-1">🔍 Процедура верификации</p>
+            <p class="text-xs text-slate-400">${ccp.verificationProcedure}</p>
+          </div>` : ''}
+
+          ${ccp.recordsRequired?.length ? `
+          <div class="border-t border-slate-800 pt-3 mt-3">
+            <p class="text-xs font-semibold text-slate-500 mb-1">📋 Необходимые записи</p>
+            <div class="flex flex-wrap gap-1">
+              ${ccp.recordsRequired.map(r => `<span class="tag bg-slate-800 text-slate-400 border border-slate-700">${r}</span>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INITIALIZATION
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Start with dashboard
+  showModule('dashboard');
+
+  // Check server
+  await checkServerStatus();
+
+  // Re-check every 30 seconds
+  setInterval(checkServerStatus, 30000);
+
+  // Close modals on backdrop click
+  document.getElementById('product-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.add('hidden');
+  });
+  document.getElementById('functional-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.add('hidden');
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('product-modal').classList.add('hidden');
+      document.getElementById('functional-modal').classList.add('hidden');
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+  });
+
+  console.log('%c🔬 Лаборатория продовольственной безопасности v1.0.0', 'color:#22c55e;font-size:14px;font-weight:bold');
+  console.log('%cРежим: 100% Автономный | Без внешних API', 'color:#94a3b8;font-size:11px');
+});
+</script>
+</body>
+</html>
